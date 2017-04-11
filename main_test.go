@@ -9,3 +9,9 @@ func TestSimpleExample(t *testing.T) {
 		t.Errorf("1 should not be equel to 2")
 	}
 }
+
+func TestSimpleFailExample(t *testing.T) {
+	if 1 == 1 {
+		t.Errorf("1 should not be equel to 1")
+	}
+}
