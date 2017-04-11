@@ -17,7 +17,7 @@ func main() {
 }
 
 func ShowBooks(w http.ResponseWriter, r *http.Request) {
-	book := Book{"A song of Ice and Fire", "Kanye West"}
+	book := Book{"A song of Ice and Fire", "Niels"}
 
 	fp := path.Join("templates", "index.html")
 	templ, err := template.ParseFiles(fp)
