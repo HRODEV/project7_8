@@ -1,32 +1,15 @@
 package main
 
 import (
-	"html/template"
+	sw "github.com/HRODEV/project7_8/routes"
+	"log"
 	"net/http"
-	"path"
 )
 
-type Book struct {
-	Title  string `json:"title"`
-	Author string `json:"author"`
-}
-
 func main() {
-	http.HandleFunc("/", ShowBooks)
-	http.ListenAndServe(":8080", nil)
-}
+	log.Printf("Server started")
 
-func ShowBooks(w http.ResponseWriter, r *http.Request) {
-	book := Book{"A song of Ice and Fire", "Niels"}
+	router := sw.NewRouter()
 
-	fp := path.Join("templates", "index.html")
-	templ, err := template.ParseFiles(fp)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	if err := templ.Execute(w, book); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
+	log.Fatal(http.ListenAndServe(":8080", router))
 }
