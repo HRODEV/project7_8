@@ -13,13 +13,24 @@ type Route struct {
 	HandlerFunc http.HandlerFunc
 }
 
+func decorateJsonHeader(handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		handler(w, r)
+	}
+}
+
+func decorateBasicHeaders(handler http.HandlerFunc) http.HandlerFunc {
+	return decorateJsonHeader(handler)
+}
+
 type Routes []Route
 
 func NewRouter() *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
 		var handler http.Handler
-		handler = route.HandlerFunc
+		handler = decorateBasicHeaders(route.HandlerFunc)
 		handler = Logger(handler, route.Name)
 
 		router.
