@@ -7,16 +7,19 @@ import (
 	"strconv"
 )
 
-type Declarations struct {
+type Declaration struct {
 	ID          int
 	Title       string
 	Description string
 }
 
 func DeclarationsGet(w http.ResponseWriter, r *http.Request) {
-	declaration := Declarations{1, "Reiskosten", "Reiskosten naar de klant"}
+	declarations := []Declaration{
+		{1, "Reiskosten", "Reiskosten naar de klant"},
+		{2, "Lunch", "Lunch met de klant"},
+	}
 
-	js, err := json.Marshal(declaration)
+	js, err := json.Marshal(declarations)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -31,9 +34,11 @@ func DeclarationsIdDelete(w http.ResponseWriter, r *http.Request) {
 }
 
 func DeclarationsIdGet(w http.ResponseWriter, r *http.Request) {
+	// Get request url parameters
 	vars := mux.Vars(r)
 	varx, err := strconv.Atoi(vars["id"])
-	declaration := Declarations{varx, "Reiskosten", "Reiskosten naar de klant"}
+
+	declaration := Declaration{varx, "Reiskosten", "Reiskosten naar de klant"}
 
 	js, err := json.Marshal(declaration)
 
