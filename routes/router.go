@@ -1,16 +1,24 @@
 package project7_8
 
 import (
-	"fmt"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 	"net/http"
 )
+
+type action func(http.ResponseWriter, *http.Request, *gorm.DB)
+
+func (action action) ToHandlerFunc(db *gorm.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		action(w, r, db)
+	}
+}
 
 type Route struct {
 	Name        string
 	Method      string
 	Pattern     string
-	HandlerFunc http.HandlerFunc
+	HandlerFunc action
 }
 
 func decorateJsonHeader(handler http.HandlerFunc) http.HandlerFunc {
@@ -26,11 +34,11 @@ func decorateBasicHeaders(handler http.HandlerFunc) http.HandlerFunc {
 
 type Routes []Route
 
-func NewRouter() *mux.Router {
+func NewRouter(db *gorm.DB) *mux.Router {
 	router := mux.NewRouter().StrictSlash(true)
 	for _, route := range routes {
 		var handler http.Handler
-		handler = decorateBasicHeaders(route.HandlerFunc)
+		handler = decorateBasicHeaders(route.HandlerFunc.ToHandlerFunc(db))
 		handler = Logger(handler, route.Name)
 
 		router.
@@ -43,8 +51,8 @@ func NewRouter() *mux.Router {
 	return router
 }
 
-func Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello World!")
+func Index(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+	w.Write([]byte("Declaration API"))
 }
 
 var routes = Routes{

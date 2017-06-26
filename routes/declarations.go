@@ -2,22 +2,16 @@ package project7_8
 
 import (
 	"encoding/json"
+	"github.com/HRODEV/project7_8/models"
 	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 	"net/http"
 	"strconv"
 )
 
-type Declaration struct {
-	ID          int
-	Title       string
-	Description string
-}
-
-func DeclarationsGet(w http.ResponseWriter, r *http.Request) {
-	declarations := []Declaration{
-		{1, "Reiskosten", "Reiskosten naar de klant"},
-		{2, "Lunch", "Lunch met de klant"},
-	}
+func DeclarationsGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+	var declarations []models.Declartion
+	db.Find(&declarations)
 
 	js, err := json.Marshal(declarations)
 
@@ -29,31 +23,45 @@ func DeclarationsGet(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 }
 
-func DeclarationsIdDelete(w http.ResponseWriter, r *http.Request) {
+func DeclarationsIdDelete(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Not implemented yet"))
 }
 
-func DeclarationsIdGet(w http.ResponseWriter, r *http.Request) {
+func DeclarationsIdGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	// Get request url parameters
 	vars := mux.Vars(r)
-	varx, err := strconv.Atoi(vars["id"])
-
-	declaration := Declaration{varx, "Reiskosten", "Reiskosten naar de klant"}
-
-	js, err := json.Marshal(declaration)
+	id, err := strconv.Atoi(vars["id"])
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.Write(js)
+	// Get declaration with the specified ID
+	var declaration models.Declartion
+
+	if db.Where("ID = ?", id).Find(&declaration).RecordNotFound() {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("Not Found"))
+	} else {
+		js, err := json.Marshal(declaration)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Write(js)
+	}
 }
 
-func DeclarationsIdPatch(w http.ResponseWriter, r *http.Request) {
+func DeclarationsIdPatch(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Not implemented yet"))
 }
 
-func DeclarationsPost(w http.ResponseWriter, r *http.Request) {
+func DeclarationsPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Not implemented yet"))
 }
