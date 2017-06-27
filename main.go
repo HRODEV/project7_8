@@ -10,7 +10,7 @@ import (
 
 func main() {
 	args := os.Args
-	dbLocation := "./db/declarations"
+	dbLocation := "./db/declarations.db"
 
 	// First argument is de db location
 	if len(args) > 1 {
