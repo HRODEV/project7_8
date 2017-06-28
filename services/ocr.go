@@ -50,6 +50,47 @@ func (OcrService *OcrService) SendImage(image multipart.File) (*models.Ocr, erro
 	return ocr, nil
 }
 
+func (OcrService *OcrService) GetBoxRightOfWord(wordToSearch string) string {
+	for _, region := range OcrService.OcrData.Regions {
+		for _, line := range region.Lines {
+			for _, word := range line.Words {
+				if !strings.Contains(strings.ToLower(word.Text), strings.ToLower(wordToSearch)) {
+					continue
+				}
+
+				foundBoundingBox := OcrService.explodeBoundingBox(word.BoundingBox)
+
+				return OcrService.findWordsInBoudingBox(foundBoundingBox)
+			}
+		}
+	}
+
+	return ""
+}
+
+func (OcrService *OcrService) findWordsInBoudingBox(box models.OcrBoundingBox) string {
+	for _, region := range OcrService.OcrData.Regions {
+		if !OcrService.isInBoundingBox(OcrService.explodeBoundingBox(region.BoundingBox), box) {
+			continue
+		}
+
+		for _, line := range region.Lines {
+			if !OcrService.isInBoundingBox(OcrService.explodeBoundingBox(line.BoundingBox), box) {
+				continue
+			}
+			for _, word := range line.Words {
+				if !OcrService.isInBoundingBox(OcrService.explodeBoundingBox(word.BoundingBox), box) {
+					continue
+				}
+
+				return word.Text
+			}
+		}
+	}
+
+	return ""
+}
+
 func (OcrService *OcrService) explodeBoundingBox(box string) models.OcrBoundingBox {
 	splittedBox := strings.Split(box, ",")
 
@@ -61,28 +102,11 @@ func (OcrService *OcrService) explodeBoundingBox(box string) models.OcrBoundingB
 	return models.OcrBoundingBox{x, y, width, height}
 }
 
-func (OcrService *OcrService) GetBoxRightOfWord(wordToSearch string) string {
-	for _, region := range OcrService.OcrData.Regions {
-		for _, line := range region.Lines {
-			for _, word := range line.Words {
-				if !strings.Contains(word.Text, wordToSearch) {
-					continue
-				}
-
-				foundBoundingBox := OcrService.explodeBoundingBox(word.BoundingBox)
-
-				for _, word := range line.Words {
-					wordBox := OcrService.explodeBoundingBox(word.BoundingBox)
-
-					if wordBox != foundBoundingBox {
-						if foundBoundingBox.Y <= wordBox.Y+20 && foundBoundingBox.Y+foundBoundingBox.Height >= (wordBox.Y+wordBox.Height)-20 {
-							return word.Text
-						}
-					}
-				}
-			}
-		}
+// Check if the given box lies in the boundings of b
+func (OcrService *OcrService) isInBoundingBox(b models.OcrBoundingBox, box models.OcrBoundingBox) bool {
+	if b.Y+b.Height > box.Y+box.Height && b.X+b.Width > box.X+box.Width {
+		return true
 	}
 
-	return ""
+	return false
 }

@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func ReceiptIdGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
@@ -72,17 +73,18 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 
 		// Send request to Microsoft OCR
 		var ocrService = services.OcrService{}
-		res, err := ocrService.SendImage(file)
-
-		log.Print(ocrService.GetBoxRightOfWord("Totaal"))
-
+		ocrService.SendImage(file)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
+		ocrString := ocrService.GetBoxRightOfWord("Totaal")
+		log.Print(ocrString)
+		totalPrice, _ := strconv.ParseFloat(strings.Replace(ocrString, ",", ".", -1), 32)
+
 		enc := json.NewEncoder(w)
-		enc.Encode(res)
+		enc.Encode(&models.Declartion{TotalPrice: float32(totalPrice)})
 
 		// Make sure the upload directory does exists
 		if _, err := os.Stat("./declarations_upload"); os.IsNotExist(err) {
