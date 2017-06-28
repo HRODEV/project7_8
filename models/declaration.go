@@ -1,7 +1,7 @@
 package models
 
 type Declartion struct {
-	ID          int64   `gorm:"column:ID"`
+	ID          int   `gorm:"column:ID;primary_key"`
 	Title       string  `gorm:"column:Title"`
 	TotalPrice  float32 `gorm:"column:TotalPrice"`
 	VATPrice    float32 `gorm:"column:VATPrice"`
