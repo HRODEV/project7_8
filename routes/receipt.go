@@ -3,9 +3,11 @@ package project7_8
 import (
 	"encoding/json"
 	"github.com/HRODEV/project7_8/models"
+	"github.com/HRODEV/project7_8/services"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -68,19 +70,30 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 			return
 		}
 
-		//create destination file making sure the path is writeable.
-		dst, err := os.Create("/home/niels/" + files[i].Filename)
-		defer dst.Close()
+		// Send request to Microsoft OCR
+		var ocrService = services.OcrService{}
+		res, err := ocrService.SendImage(file)
+
+		log.Print(ocrService.GetBoxRightOfWord("Totaal"))
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		//copy the uploaded file to the destination file
-		if _, err := io.Copy(dst, file); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		enc := json.NewEncoder(w)
+		enc.Encode(res)
+
+		// Make sure the upload directory does exists
+		if _, err := os.Stat("./declarations_upload"); os.IsNotExist(err) {
+			os.Mkdir("./declarations_upload", os.ModePerm)
 		}
+
+		// Create a empty file and write the uploaded image
+		dst, err := os.Create("./declarations_upload/" + files[i].Filename)
+		defer dst.Close()
+
+		// Save the file
+		io.Copy(dst, file)
 	}
 }
