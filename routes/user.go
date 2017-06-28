@@ -1,30 +1,38 @@
 package project7_8
 
 import (
+	"encoding/json"
+	"github.com/HRODEV/project7_8/models"
+	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"net/http"
 )
 
-type User struct {
-
+func UserAuthGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Not implemented yet"))
 }
 
-func UserAuthGet(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
+func UserGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+	var users []models.User
+	db.Find(&users)
+
+	js, err := json.Marshal(users)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Write(js)
 }
 
-func UserGet(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
+func UserPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Not implemented yet"))
 }
 
-func UserPost(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
+func UserProjectsGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Not implemented yet"))
 }
-
-func UserProjectsGet(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
-		w.WriteHeader(http.StatusOK)
-}
-

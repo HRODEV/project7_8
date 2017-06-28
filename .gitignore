@@ -1,3 +1,5 @@
+# SQLite Database
+*.db
 
 # Created by https://www.gitignore.io/api/go,linux,windows,jetbrains,visualstudio,visualstudiocode
 
