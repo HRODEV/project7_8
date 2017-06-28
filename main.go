@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/HRODEV/project7_8/dbActions"
 	"github.com/HRODEV/project7_8/models"
 	sw "github.com/HRODEV/project7_8/routes"
 	"github.com/jinzhu/gorm"
@@ -26,6 +27,7 @@ func main() {
 
 	db.AutoMigrate(&models.User{}, &models.Declaration{}, &models.Receipt{}, &models.Project{}, &models.DeclarationStatus{})
 
+	dbActions.CreateUser(&models.User{Email: "barld@barld.nl", FirstName: "Barld", LastName: "Boot", Password: "Secret"}, db)
 	//db.Model(&models.Declaration{}).
 	//	AddForeignKey("user_id", "users(id)", "RESTRICT", "RESTRICT")
 
