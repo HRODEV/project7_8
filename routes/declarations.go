@@ -10,7 +10,7 @@ import (
 )
 
 func DeclarationsGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
-	var declarations []models.Declartion
+	var declarations []models.Declaration
 	db.Find(&declarations)
 
 	js, err := json.Marshal(declarations)
@@ -39,7 +39,7 @@ func DeclarationsIdGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	}
 
 	// Get declaration with the specified ID
-	var declaration models.Declartion
+	var declaration models.Declaration
 
 	if db.Where("ID = ?", id).Find(&declaration).RecordNotFound() {
 		w.WriteHeader(http.StatusNotFound)

@@ -1,13 +1,12 @@
 package models
 
 type User struct {
-	ID        int    `gorm:"column:ID"`
-	Email     string `gorm:"column:Email"`
-	FirstName string `gorm:"column:FirstName"`
-	LastName  string `gorm:"column:LastName"`
-	Password  string `gorm:"column:Password"`
-}
-
-func (User) TableName() string {
-	return "User"
+	ID                  uint `gorm:"primary_key;AUTO_INCREMENT"`
+	Email               string
+	FirstName           string
+	LastName            string
+	Password            string
+	DeclarationStatuses *[]DeclarationStatus
+	UserProjects        *[]Project
+	Declarations        *[]Declaration
 }

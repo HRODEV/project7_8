@@ -22,7 +22,7 @@ func ReceiptIdGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	}
 
 	// Get receipt with the specified ID
-	var Receipt models.Declartion
+	var Receipt models.Declaration
 
 	if db.Where("ID = ?", id).Find(&Receipt).RecordNotFound() {
 		w.WriteHeader(http.StatusNotFound)
