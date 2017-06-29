@@ -16,3 +16,7 @@ type Declaration struct {
 	UserID              uint `sql:"type:integer REFERENCES users(id)"`
 	DeclarationStatusus *[]DeclarationStatus
 }
+
+func (declaration *Declaration) IsValid() bool {
+	return true
+}

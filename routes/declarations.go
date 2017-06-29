@@ -2,62 +2,49 @@ package project7_8
 
 import (
 	"encoding/json"
+	"github.com/HRODEV/project7_8/dbActions"
 	"github.com/HRODEV/project7_8/models"
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 )
 
-func DeclarationsGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
-	var declarations []models.Declaration
-	db.Find(&declarations)
+func DeclarationsGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
+	declarations := []models.Declaration{}
+	dbActions.GetDeclarations(&declarations, utils.db)
 
-	js, err := json.Marshal(declarations)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Write(js)
+	return &declarations
 }
 
-func DeclarationsIdDelete(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+func DeclarationsIdDelete(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Not implemented yet"))
 }
 
-func DeclarationsIdGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+func DeclarationsIdGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
 	// Get request url parameters
 	vars := mux.Vars(r)
 	id, err := strconv.Atoi(vars["id"])
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil
 	}
 
 	// Get declaration with the specified ID
-	var declaration models.Declaration
+	declaration := models.Declaration{}
+	dbActions.GetDeclarationById(uint(id), &declaration, utils.db)
 
-	if db.Where("ID = ?", id).Find(&declaration).RecordNotFound() {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("Not Found"))
-	} else {
-		js, err := json.Marshal(declaration)
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Write(js)
+	if declaration.ID == 0 {
+		http.Error(w, err.Error(), http.StatusNotFound)
+		return nil
 	}
+
+	return &declaration
 }
 
-func DeclarationsIdPatch(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+func DeclarationsIdPatch(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseUint(vars["id"], 10, 32)
 
@@ -68,23 +55,16 @@ func DeclarationsIdPatch(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil
 	}
 
-	// Add primary_key to the struct
-	declaration.ID = uint(id)
+	// Update declaration
+	dbActions.UpdateDeclarationById(uint(id), &declaration, utils.db)
 
-	// Get the current values and insert the difference
-	currentDeclarations := models.Declaration{}
-	db.Where("ID = ?", id).First(&currentDeclarations)
-	db.Model(&currentDeclarations).Update(&declaration)
-
-	// Render inserted object
-	enc := json.NewEncoder(w)
-	enc.Encode(&currentDeclarations)
+	return &declaration
 }
 
-func DeclarationsPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+func DeclarationsPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
 	// Convert request body to interface
 	declaration := models.Declaration{}
 	reqBody, _ := ioutil.ReadAll(r.Body)
@@ -92,13 +72,11 @@ func DeclarationsPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil
 	}
 
-	// Insert into database
-	db.Create(&declaration)
+	// Create declaration
+	dbActions.CreateDeclaration(&declaration, utils.db)
 
-	// Render inserted object
-	enc := json.NewEncoder(w)
-	enc.Encode(&declaration)
+	return &declaration
 }

@@ -1,16 +1,28 @@
 package project7_8
 
 import (
+	"encoding/json"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"net/http"
 )
 
-type action func(http.ResponseWriter, *http.Request, *gorm.DB)
+//type action func(http.ResponseWriter, *http.Request, *gorm.DB)
+type action func(http.ResponseWriter, *http.Request, utils) interface{}
+
+type Utils struct {
+	db *gorm.DB
+}
 
 func (action action) ToHandlerFunc(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		action(w, r, db)
+		responseBody := action(w, r, utils{db: db})
+		enc := json.NewEncoder(w)
+		err := enc.Encode(&responseBody)
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+		}
 	}
 }
 
