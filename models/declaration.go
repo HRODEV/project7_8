@@ -1,13 +1,11 @@
 package models
 
-import "time"
-
 type Declaration struct {
 	ID                  uint `gorm:"primary_key;AUTO_INCREMENT"`
 	Title               string
 	TotalPrice          float32
 	VATPrice            float32
-	Date                time.Time
+	Date                string
 	Description         string
 	Project             *Project
 	ProjectID           uint `sql:"type:integer REFERENCES projects(id)"`
