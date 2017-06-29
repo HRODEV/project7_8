@@ -3,12 +3,15 @@ package project7_8
 import (
 	"encoding/json"
 	"github.com/HRODEV/project7_8/models"
+	"github.com/HRODEV/project7_8/services"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"io"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
+	"time"
 )
 
 func ReceiptIdGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
@@ -22,20 +25,14 @@ func ReceiptIdGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	}
 
 	// Get receipt with the specified ID
-	var Receipt models.Declaration
+	var Receipt models.Receipt
 
 	if db.Where("ID = ?", id).Find(&Receipt).RecordNotFound() {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("Not Found"))
 	} else {
-		js, err := json.Marshal(Receipt)
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Write(js)
+		enc := json.NewEncoder(w)
+		enc.Encode(Receipt)
 	}
 }
 
@@ -68,19 +65,37 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 			return
 		}
 
-		//create destination file making sure the path is writeable.
-		dst, err := os.Create("/home/niels/" + files[i].Filename)
-		defer dst.Close()
+		// Send request to Microsoft OCR
+		var ocrService = services.OcrService{}
+		res, err := ocrService.SendImage(file)
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		//copy the uploaded file to the destination file
-		if _, err := io.Copy(dst, file); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		ocrString := ocrService.GetBoxRightOfWord("Totaal")
+		totalPrice, _ := strconv.ParseFloat(strings.Replace(ocrString, ",", ".", -1), 32)
+
+		// Make sure the upload directory does exists
+		if _, err := os.Stat("./declarations_upload"); os.IsNotExist(err) {
+			os.Mkdir("./declarations_upload", os.ModePerm)
 		}
+
+		// Create a empty file and write the uploaded image
+		dst, err := os.Create("./declarations_upload/" + files[i].Filename)
+		defer dst.Close()
+
+		// Save the file
+		io.Copy(dst, file)
+
+		// Save receipt in the database
+		ocrData, _ := json.Marshal(res)
+		receipt := models.Receipt{ID: 0, ImagePath: "./declarations_upload/" + files[i].Filename, Data: string(ocrData)}
+		db.LogMode(true)
+		db.Create(&receipt)
+
+		enc := json.NewEncoder(w)
+		enc.Encode(&models.Declartion{TotalPrice: float32(totalPrice), ReceiptID: receipt.ID, Date: time.Now().Format(time.RFC3339)})
 	}
 }

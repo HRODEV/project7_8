@@ -5,6 +5,7 @@ import (
 	"github.com/HRODEV/project7_8/models"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
+	"io/ioutil"
 	"net/http"
 	"strconv"
 )
@@ -57,11 +58,47 @@ func DeclarationsIdGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 }
 
 func DeclarationsIdPatch(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Not implemented yet"))
+	vars := mux.Vars(r)
+	id, _ := strconv.Atoi(vars["id"])
+
+	// Convert request body to interface
+	declaration := models.Declartion{}
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	err := json.Unmarshal(reqBody, &declaration)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Add primary_key to the struct
+	declaration.ID = id
+
+	// Get the current values and insert the difference
+	currentDeclarations := models.Declartion{}
+	db.Where("ID = ?", id).First(&currentDeclarations)
+	db.Model(&currentDeclarations).Update(&declaration)
+
+	// Render inserted object
+	enc := json.NewEncoder(w)
+	enc.Encode(&currentDeclarations)
 }
 
 func DeclarationsPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Not implemented yet"))
+	// Convert request body to interface
+	declaration := models.Declartion{}
+	reqBody, _ := ioutil.ReadAll(r.Body)
+	err := json.Unmarshal(reqBody, &declaration)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Insert into database
+	db.Create(&declaration)
+
+	// Render inserted object
+	enc := json.NewEncoder(w)
+	enc.Encode(&declaration)
 }
