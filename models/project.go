@@ -1,10 +1,8 @@
 package models
 
 type Project struct {
-	ID   int    `gorm:"column:ID"`
-	Name string `gorm:"column:Name"`
-}
-
-func (Project) TableName() string {
-	return "Project"
+	ID           uint `gorm:"primary_key;AUTO_INCREMENT"`
+	Name         string
+	Users        *[]User
+	Declarations *[]Declaration
 }

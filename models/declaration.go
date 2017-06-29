@@ -1,18 +1,20 @@
 package models
 
-type Declartion struct {
-	ID          int     `gorm:"column:ID;primary_key"`
-	Title       string  `gorm:"column:Title"`
-	TotalPrice  float32 `gorm:"column:TotalPrice"`
-	VATPrice    float32 `gorm:"column:VATPrice"`
-	Date        string  `gorm:"column:Date"`
-	Description string  `gorm:"column:Description"`
-	ProjectID   int     `gorm:"column:ProjectID"`
-	StoreName   string  `gorm:"column:StoreName"`
-	ReceiptID   int     `gorm:"column:ReceiptID"`
-	UserID      int     `gorm:"column:UserID"`
-}
+import "time"
 
-func (Declartion) TableName() string {
-	return "Declaration"
+type Declaration struct {
+	ID                  uint `gorm:"primary_key;AUTO_INCREMENT"`
+	Title               string
+	TotalPrice          float32
+	VATPrice            float32
+	Date                time.Time
+	Description         string
+	Project             *Project
+	ProjectID           uint `sql:"type:integer REFERENCES projects(id)"`
+	StoreName           string
+	Receipt             *Receipt
+	ReceiptID           uint `sql:"type:integer REFERENCES receipts(id)"`
+	User                *User
+	UserID              uint `sql:"type:integer REFERENCES users(id)"`
+	DeclarationStatusus *[]DeclarationStatus
 }

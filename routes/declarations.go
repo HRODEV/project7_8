@@ -11,7 +11,7 @@ import (
 )
 
 func DeclarationsGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
-	var declarations []models.Declartion
+	var declarations []models.Declaration
 	db.Find(&declarations)
 
 	js, err := json.Marshal(declarations)
@@ -40,7 +40,7 @@ func DeclarationsIdGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	}
 
 	// Get declaration with the specified ID
-	var declaration models.Declartion
+	var declaration models.Declaration
 
 	if db.Where("ID = ?", id).Find(&declaration).RecordNotFound() {
 		w.WriteHeader(http.StatusNotFound)
@@ -59,10 +59,10 @@ func DeclarationsIdGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 
 func DeclarationsIdPatch(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	vars := mux.Vars(r)
-	id, _ := strconv.Atoi(vars["id"])
+	id, _ := strconv.ParseUint(vars["id"], 10, 32)
 
 	// Convert request body to interface
-	declaration := models.Declartion{}
+	declaration := models.Declaration{}
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	err := json.Unmarshal(reqBody, &declaration)
 
@@ -72,10 +72,10 @@ func DeclarationsIdPatch(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	}
 
 	// Add primary_key to the struct
-	declaration.ID = id
+	declaration.ID = uint(id)
 
 	// Get the current values and insert the difference
-	currentDeclarations := models.Declartion{}
+	currentDeclarations := models.Declaration{}
 	db.Where("ID = ?", id).First(&currentDeclarations)
 	db.Model(&currentDeclarations).Update(&declaration)
 
@@ -86,7 +86,7 @@ func DeclarationsIdPatch(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 
 func DeclarationsPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	// Convert request body to interface
-	declaration := models.Declartion{}
+	declaration := models.Declaration{}
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	err := json.Unmarshal(reqBody, &declaration)
 

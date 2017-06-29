@@ -417,3 +417,4 @@ __pycache__/
 *.xsd.cs
 
 # End of https://www.gitignore.io/api/go,linux,windows,jetbrains,visualstudio,visualstudiocode
+db/declarations.sqlite

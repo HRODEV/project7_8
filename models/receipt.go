@@ -1,11 +1,9 @@
 package models
 
 type Receipt struct {
-	ID        int    `gorm:"column:ID;primary_key"`
-	ImagePath string `gorm:"column:ImagePath"`
-	Data      string `gorm:"column:Data"`
-}
-
-func (Receipt) TableName() string {
-	return "Receipt"
+	ID            uint `gorm:"primary_key;AUTO_INCREMENT"`
+	ImagePath     string
+	Data          string `gorm:"type:text"`
+	Declaration   *Declaration
+	DeclarationID uint `sql:"type:integer REFERENCES declarations(id)"`
 }

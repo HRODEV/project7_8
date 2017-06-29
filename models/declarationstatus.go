@@ -1,13 +1,13 @@
 package models
 
-type DeclarationStatus struct {
-	ID               int    `gorm:"column:ID"`
-	Status           string `gorm:"column:Status"`
-	DateModified     string `gorm:"column:DateModified"`
-	DeclarationID    int    `gorm:"column:DeclarationID"`
-	ModifiedByUserID int    `gorm:"column:ModifiedByUserID"`
-}
+import "time"
 
-func (DeclarationStatus) TableName() string {
-	return "DeclarationStatus"
+type DeclarationStatus struct {
+	ID            uint `gorm:"primary_key;AUTO_INCREMENT"`
+	Status        string
+	DateModified  time.Time
+	Declaration   *Declaration
+	DeclarationID uint `sql:"type:integer REFERENCES declarations(id)"`
+	User          *User
+	UserId        uint `sql:"type:integer REFERENCES users(id)"`
 }
