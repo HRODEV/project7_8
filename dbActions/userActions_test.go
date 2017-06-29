@@ -22,7 +22,7 @@ func init() {
 }
 
 func TestCreateUser(t *testing.T) {
-	newUser := models.User{Email: "barld@barld.nl", FirstName: "Barld", LastName: "Boot", Password: "Secret"}
+	newUser := models.User{Email: "barld@barld.nl", FirstName: "Barld", LastName: "Boot", Password: "Secret12345"}
 	CreateUser(&newUser, db)
 
 	var lastUser models.User
@@ -33,7 +33,7 @@ func TestCreateUser(t *testing.T) {
 }
 
 func TestGetUserByID(t *testing.T) {
-	newUser := models.User{Email: "barld2@barld.nl", FirstName: "Barld", LastName: "Boot", Password: "Secret"}
+	newUser := models.User{Email: "barld2@barld.nl", FirstName: "Barld", LastName: "Boot", Password: "Secret12345"}
 	CreateUser(&newUser, db)
 
 	var UserByID models.User
