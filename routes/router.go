@@ -2,9 +2,10 @@ package project7_8
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
-	"net/http"
 )
 
 //type action func(http.ResponseWriter, *http.Request, *gorm.DB)
@@ -63,8 +64,8 @@ func NewRouter(db *gorm.DB) *mux.Router {
 	return router
 }
 
-func Index(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
-	w.Write([]byte("Declaration API"))
+func Index(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
+	return "Declaration API"
 }
 
 var routes = Routes{

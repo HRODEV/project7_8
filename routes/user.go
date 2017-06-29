@@ -2,6 +2,7 @@ package project7_8
 
 import (
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -9,49 +10,39 @@ import (
 	"github.com/HRODEV/project7_8/dbActions"
 	"github.com/HRODEV/project7_8/models"
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
-func UserAuthGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+func UserAuthGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Not implemented yet"))
 }
 
-func UserGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+func UserGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
 	vars := mux.Vars(r)
 	id, _ := strconv.ParseUint(vars["id"], 10, 32)
 
-	var user models.User
-	dbActions.GetUserByID(uint(id), &user, db)
+	var user *models.User
+	dbActions.GetUserByID(uint(id), user, utils.db)
 
-	js, err := json.Marshal(user)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.Write(js)
+	return user
 }
 
 //
-func UserPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
+func UserPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
 	// Convert request body to interface
-	user := &models.User{}
+	var user *models.User
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	err := json.Unmarshal(reqBody, user)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return nil
 	}
 
-	dbActions.CreateUser(user, db)
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Not implemented yet"))
+	dbActions.CreateUser(user, utils.db)
+	return user
 }
 
-func UserProjectsGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Not implemented yet"))
+func UserProjectsGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
+	return errors.New("not yet implemented")
 }

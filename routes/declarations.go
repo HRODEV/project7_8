@@ -2,12 +2,14 @@ package project7_8
 
 import (
 	"encoding/json"
-	"github.com/HRODEV/project7_8/dbActions"
-	"github.com/HRODEV/project7_8/models"
-	"github.com/gorilla/mux"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+
+	"github.com/HRODEV/project7_8/dbActions"
+	"github.com/HRODEV/project7_8/models"
+	"github.com/gorilla/mux"
 )
 
 func DeclarationsGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
