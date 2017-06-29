@@ -10,3 +10,4 @@ after_script: # here's a build step block
 - echo "We can put normal shell commands here"
 - echo "more shell commands here"
 - nohup go run main.go > /dev/null 2>&1 &
+- npm install -g newman
