@@ -12,5 +12,5 @@ type User struct {
 }
 
 func (u *User) IsValid() bool {
-	return len(u.Email) > 5 && len(u.Password) >= 8
+	return u != nil && len(u.Email) > 5 && len(u.Password) >= 8
 }
