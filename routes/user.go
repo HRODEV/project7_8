@@ -2,10 +2,13 @@ package project7_8
 
 import (
 	"encoding/json"
+	"github.com/HRODEV/project7_8/dbActions"
 	"github.com/HRODEV/project7_8/models"
+	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"net/http"
+	"strconv"
 )
 
 func UserAuthGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
@@ -14,10 +17,13 @@ func UserAuthGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 }
 
 func UserGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
-	var users []models.User
-	db.Find(&users)
+	vars := mux.Vars(r)
+	id, _ := strconv.ParseUint(vars["id"], 10, 32)
 
-	js, err := json.Marshal(users)
+	var user models.User
+	dbActions.GetUserByID(uint(id), &user, db)
+
+	js, err := json.Marshal(user)
 
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)

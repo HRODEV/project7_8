@@ -28,7 +28,7 @@ func TestCreateUser(t *testing.T) {
 	var lastUser models.User
 	db.Last(&lastUser)
 	if lastUser != newUser {
-		t.Errorf("the last user should be %#v but was %#v", newUser, lastUser)
+		t.Errorf("the last user should be %+v but was %+v", newUser, lastUser)
 	}
 }
 
@@ -39,6 +39,6 @@ func TestGetUserByID(t *testing.T) {
 	var UserByID models.User
 	GetUserByID(newUser.ID, &UserByID, db)
 	if UserByID != newUser {
-		t.Errorf("the last user should be %#v but was %#v", newUser, UserByID)
+		t.Errorf("the last user should be %+v but was %+v", newUser, UserByID)
 	}
 }
