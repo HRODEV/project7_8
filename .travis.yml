@@ -9,4 +9,4 @@ go:
 after_script: # here's a build step block
 - echo "We can put normal shell commands here"
 - echo "more shell commands here"
-- go run main.go
+- nohup go run main.go > /dev/null 2>&1 &
