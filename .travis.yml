@@ -9,6 +9,10 @@ go:
 after_script: # here's a build step block
 - npm update -g n
 - npm update npm -g
+- npm update -g n
+- npm update npm -g
+- npm update -g n
+- npm update npm -g
 - node -v
 - nohup go run main.go > /dev/null 2>&1 &
 - npm install -g newman
