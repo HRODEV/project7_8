@@ -2,12 +2,14 @@ package project7_8
 
 import (
 	"encoding/json"
-	"github.com/HRODEV/project7_8/dbActions"
-	"github.com/HRODEV/project7_8/models"
-	"github.com/gorilla/mux"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
+
+	"github.com/HRODEV/project7_8/dbActions"
+	"github.com/HRODEV/project7_8/models"
+	"github.com/gorilla/mux"
 )
 
 func DeclarationsGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
@@ -18,8 +20,7 @@ func DeclarationsGet(w http.ResponseWriter, r *http.Request, utils Utils) interf
 }
 
 func DeclarationsIdDelete(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Not implemented yet"))
+	return errors.New("Not Implemented")
 }
 
 func DeclarationsIdGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {

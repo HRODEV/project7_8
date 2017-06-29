@@ -2,13 +2,14 @@ package project7_8
 
 import (
 	"encoding/json"
+	"net/http"
+
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
-	"net/http"
 )
 
 //type action func(http.ResponseWriter, *http.Request, *gorm.DB)
-type action func(http.ResponseWriter, *http.Request, utils) interface{}
+type action func(http.ResponseWriter, *http.Request, Utils) interface{}
 
 type Utils struct {
 	db *gorm.DB
@@ -16,7 +17,7 @@ type Utils struct {
 
 func (action action) ToHandlerFunc(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		responseBody := action(w, r, utils{db: db})
+		responseBody := action(w, r, Utils{db: db})
 		enc := json.NewEncoder(w)
 		err := enc.Encode(&responseBody)
 
@@ -63,8 +64,8 @@ func NewRouter(db *gorm.DB) *mux.Router {
 	return router
 }
 
-func Index(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
-	w.Write([]byte("Declaration API"))
+func Index(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
+	return "Declaration API"
 }
 
 var routes = Routes{
