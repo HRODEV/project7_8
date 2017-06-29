@@ -96,6 +96,6 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 		db.Create(&receipt)
 
 		enc := json.NewEncoder(w)
-		enc.Encode(&models.Declartion{TotalPrice: float32(totalPrice), ReceiptID: receipt.ID, Date: time.Now().Format(time.RFC3339)})
+		enc.Encode(&models.Declaration{TotalPrice: float32(totalPrice), ReceiptID: receipt.ID, Date: time.Now().Format(time.RFC3339)})
 	}
 }
