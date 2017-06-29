@@ -64,24 +64,36 @@ func DeclarationsIdPatch(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	// Convert request body to interface
 	declaration := models.Declartion{}
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	json.Unmarshal(reqBody, &declaration)
+	err := json.Unmarshal(reqBody, &declaration)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// Add primary_key to the struct
 	declaration.ID = id
 
-	// Insert into database
-	db.Save(&declaration)
+	// Get the current values and insert the difference
+	currentDeclarations := models.Declartion{}
+	db.Where("ID = ?", id).First(&currentDeclarations)
+	db.Model(&currentDeclarations).Update(&declaration)
 
 	// Render inserted object
 	enc := json.NewEncoder(w)
-	enc.Encode(&declaration)
+	enc.Encode(&currentDeclarations)
 }
 
 func DeclarationsPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	// Convert request body to interface
 	declaration := models.Declartion{}
 	reqBody, _ := ioutil.ReadAll(r.Body)
-	json.Unmarshal(reqBody, &declaration)
+	err := json.Unmarshal(reqBody, &declaration)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// Insert into database
 	db.Create(&declaration)

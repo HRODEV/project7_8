@@ -7,11 +7,11 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func ReceiptIdGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
@@ -25,20 +25,14 @@ func ReceiptIdGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 	}
 
 	// Get receipt with the specified ID
-	var Receipt models.Declartion
+	var Receipt models.Receipt
 
 	if db.Where("ID = ?", id).Find(&Receipt).RecordNotFound() {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte("Not Found"))
 	} else {
-		js, err := json.Marshal(Receipt)
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		w.Write(js)
+		enc := json.NewEncoder(w)
+		enc.Encode(Receipt)
 	}
 }
 
@@ -73,18 +67,15 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 
 		// Send request to Microsoft OCR
 		var ocrService = services.OcrService{}
-		ocrService.SendImage(file)
+		res, err := ocrService.SendImage(file)
+
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		ocrString := ocrService.GetBoxRightOfWord("Totaal")
-		log.Print(ocrString)
 		totalPrice, _ := strconv.ParseFloat(strings.Replace(ocrString, ",", ".", -1), 32)
-
-		enc := json.NewEncoder(w)
-		enc.Encode(&models.Declartion{TotalPrice: float32(totalPrice)})
 
 		// Make sure the upload directory does exists
 		if _, err := os.Stat("./declarations_upload"); os.IsNotExist(err) {
@@ -97,5 +88,14 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 
 		// Save the file
 		io.Copy(dst, file)
+
+		// Save receipt in the database
+		ocrData, _ := json.Marshal(res)
+		receipt := models.Receipt{ID: 0, ImagePath: "./declarations_upload/" + files[i].Filename, Data: string(ocrData)}
+		db.LogMode(true)
+		db.Create(&receipt)
+
+		enc := json.NewEncoder(w)
+		enc.Encode(&models.Declartion{TotalPrice: float32(totalPrice), ReceiptID: receipt.ID, Date: time.Now().Format(time.RFC3339)})
 	}
 }
