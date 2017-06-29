@@ -35,7 +35,7 @@ func decorateBasicHeaders(handler http.HandlerFunc) http.HandlerFunc {
 type Routes []Route
 
 func NewRouter(db *gorm.DB) *mux.Router {
-	router := mux.NewRouter().StrictSlash(true)
+	router := mux.NewRouter().StrictSlash(false)
 	for _, route := range routes {
 		var handler http.Handler
 		handler = decorateBasicHeaders(route.HandlerFunc.ToHandlerFunc(db))
