@@ -18,8 +18,19 @@ func DeclarationsGet(w http.ResponseWriter, r *http.Request, utils Utils) interf
 }
 
 func DeclarationsIdDelete(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Not implemented yet"))
+	// Get request url parameters
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil
+	}
+
+	dbActions.DeleteDeclarationById(uint(id), utils.db)
+	w.WriteHeader(http.StatusNoContent)
+
+	return nil
 }
 
 func DeclarationsIdGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
