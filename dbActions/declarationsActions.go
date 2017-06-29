@@ -33,3 +33,7 @@ func UpdateDeclarationById(id uint, declaration *models.Declaration, db *gorm.DB
 		return errors.New("Declaration Struct not valid")
 	}
 }
+
+func DeleteDeclarationById(id uint, db *gorm.DB) {
+	db.Delete(&models.Declaration{ID: id})
+}
