@@ -11,7 +11,6 @@ import (
 	"os"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func ReceiptIdGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
@@ -96,6 +95,6 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 		db.Create(&receipt)
 
 		enc := json.NewEncoder(w)
-		enc.Encode(&models.Declaration{TotalPrice: float32(totalPrice), ReceiptID: receipt.ID, Date: time.Now()})
+		enc.Encode(&models.Declaration{TotalPrice: float32(totalPrice), ReceiptID: receipt.ID})
 	}
 }
