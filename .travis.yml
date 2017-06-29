@@ -6,7 +6,7 @@ go:
   - 1.8.x
 
 
-after_script: # here's a build step block
+script: # here's a build step block
 - nvm install stable
 - nvm use stable
 - npm install
