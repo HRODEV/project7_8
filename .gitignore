@@ -1,6 +1,9 @@
 # SQLite Database
 *.db
 
+# Directories
+/declarations_upload
+
 # Created by https://www.gitignore.io/api/go,linux,windows,jetbrains,visualstudio,visualstudiocode
 
 ### Go ###

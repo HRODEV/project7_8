@@ -3,12 +3,15 @@ package project7_8
 import (
 	"encoding/json"
 	"github.com/HRODEV/project7_8/models"
+	"github.com/HRODEV/project7_8/services"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	"io"
+	"log"
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 )
 
 func ReceiptIdGet(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
@@ -68,19 +71,31 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, db *gorm.DB) {
 			return
 		}
 
-		//create destination file making sure the path is writeable.
-		dst, err := os.Create("/home/niels/" + files[i].Filename)
-		defer dst.Close()
-
+		// Send request to Microsoft OCR
+		var ocrService = services.OcrService{}
+		ocrService.SendImage(file)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
 
-		//copy the uploaded file to the destination file
-		if _, err := io.Copy(dst, file); err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
+		ocrString := ocrService.GetBoxRightOfWord("Totaal")
+		log.Print(ocrString)
+		totalPrice, _ := strconv.ParseFloat(strings.Replace(ocrString, ",", ".", -1), 32)
+
+		enc := json.NewEncoder(w)
+		enc.Encode(&models.Declartion{TotalPrice: float32(totalPrice)})
+
+		// Make sure the upload directory does exists
+		if _, err := os.Stat("./declarations_upload"); os.IsNotExist(err) {
+			os.Mkdir("./declarations_upload", os.ModePerm)
 		}
+
+		// Create a empty file and write the uploaded image
+		dst, err := os.Create("./declarations_upload/" + files[i].Filename)
+		defer dst.Close()
+
+		// Save the file
+		io.Copy(dst, file)
 	}
 }
