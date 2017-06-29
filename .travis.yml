@@ -13,4 +13,4 @@ after_script: # here's a build step block
 - node -v
 - nohup go run main.go > /dev/null 2>&1 &
 - npm install -g newman
-- newman run ./PostManTests/web.postman_collection.json
+- newman run ./PostManTests/web.postman_collection.json --bail
