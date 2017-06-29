@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/HRODEV/project7_8/models"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/HRODEV/project7_8/models"
 )
 
 type OcrService struct {
@@ -104,9 +105,5 @@ func (OcrService *OcrService) explodeBoundingBox(box string) models.OcrBoundingB
 
 // Check if the given box lies in the boundings of b
 func (OcrService *OcrService) isInBoundingBox(b models.OcrBoundingBox, box models.OcrBoundingBox) bool {
-	if b.Y+b.Height > box.Y+box.Height && b.X+b.Width > box.X+box.Width {
-		return true
-	}
-
-	return false
+	return b.Y <= (box.Y+20) && (b.Y+b.Height) >= (box.Y+box.Height-20)
 }
