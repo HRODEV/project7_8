@@ -3,19 +3,20 @@ package project7_8
 import (
 	"encoding/json"
 	"errors"
-	"io/ioutil"
-	"net/http"
-	"strconv"
-
 	"github.com/HRODEV/project7_8/dbActions"
 	"github.com/HRODEV/project7_8/models"
 	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"io/ioutil"
+	"net/http"
+	"strconv"
 )
 
 func UserAuthGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte("Not implemented yet"))
+
+	return nil
 }
 
 func UserGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {

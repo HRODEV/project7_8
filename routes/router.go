@@ -18,11 +18,14 @@ type Utils struct {
 func (action action) ToHandlerFunc(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		responseBody := action(w, r, Utils{db: db})
-		enc := json.NewEncoder(w)
-		err := enc.Encode(&responseBody)
 
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+		if responseBody != nil {
+			enc := json.NewEncoder(w)
+			err := enc.Encode(&responseBody)
+
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
 		}
 	}
 }

@@ -2,14 +2,12 @@ package project7_8
 
 import (
 	"encoding/json"
-	"errors"
-	"io/ioutil"
-	"net/http"
-	"strconv"
-
 	"github.com/HRODEV/project7_8/dbActions"
 	"github.com/HRODEV/project7_8/models"
 	"github.com/gorilla/mux"
+	"io/ioutil"
+	"net/http"
+	"strconv"
 )
 
 func DeclarationsGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
@@ -50,7 +48,7 @@ func DeclarationsIdGet(w http.ResponseWriter, r *http.Request, utils Utils) inte
 	dbActions.GetDeclarationById(uint(id), &declaration, utils.db)
 
 	if declaration.ID == 0 {
-		http.Error(w, err.Error(), http.StatusNotFound)
+		http.Error(w, "Not found", http.StatusNotFound)
 		return nil
 	}
 
