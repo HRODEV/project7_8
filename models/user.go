@@ -10,3 +10,7 @@ type User struct {
 	UserProjects        *[]Project
 	Declarations        *[]Declaration
 }
+
+func (u *User) IsValid() bool {
+	return len(u.Email) > 5 && len(u.Password) >= 8
+}

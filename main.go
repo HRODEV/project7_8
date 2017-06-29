@@ -26,8 +26,7 @@ func main() {
 	defer db.Close()
 
 	db.AutoMigrate(&models.User{}, &models.Declaration{}, &models.Receipt{}, &models.Project{}, &models.DeclarationStatus{})
-
-	dbActions.CreateUser(&models.User{Email: "barld@barld.nl", FirstName: "Barld", LastName: "Boot", Password: "Secret"}, db)
+	
 	//db.Model(&models.Declaration{}).
 	//	AddForeignKey("user_id", "users(id)", "RESTRICT", "RESTRICT")
 
