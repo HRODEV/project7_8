@@ -1,25 +1,60 @@
 package project7_8
 
 import (
-	"fmt"
-	"github.com/gorilla/mux"
+	"encoding/json"
 	"net/http"
+
+	"github.com/gorilla/mux"
+	"github.com/jinzhu/gorm"
 )
+
+//type action func(http.ResponseWriter, *http.Request, *gorm.DB)
+type action func(http.ResponseWriter, *http.Request, Utils) interface{}
+
+type Utils struct {
+	db *gorm.DB
+}
+
+func (action action) ToHandlerFunc(db *gorm.DB) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		responseBody := action(w, r, Utils{db: db})
+
+		if responseBody != nil {
+			enc := json.NewEncoder(w)
+			err := enc.Encode(&responseBody)
+
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+			}
+		}
+	}
+}
 
 type Route struct {
 	Name        string
 	Method      string
 	Pattern     string
-	HandlerFunc http.HandlerFunc
+	HandlerFunc action
+}
+
+func decorateJsonHeader(handler http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
+		handler(w, r)
+	}
+}
+
+func decorateBasicHeaders(handler http.HandlerFunc) http.HandlerFunc {
+	return decorateJsonHeader(handler)
 }
 
 type Routes []Route
 
-func NewRouter() *mux.Router {
-	router := mux.NewRouter().StrictSlash(true)
+func NewRouter(db *gorm.DB) *mux.Router {
+	router := mux.NewRouter().StrictSlash(false)
 	for _, route := range routes {
 		var handler http.Handler
-		handler = route.HandlerFunc
+		handler = decorateBasicHeaders(route.HandlerFunc.ToHandlerFunc(db))
 		handler = Logger(handler, route.Name)
 
 		router.
@@ -32,8 +67,8 @@ func NewRouter() *mux.Router {
 	return router
 }
 
-func Index(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Hello World!")
+func Index(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
+	return "Declaration API"
 }
 
 var routes = Routes{
