@@ -3,7 +3,6 @@ package project7_8
 import (
 	"encoding/json"
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"strconv"
@@ -29,6 +28,11 @@ func ReceiptIdGet(w http.ResponseWriter, r *http.Request, utils Utils) interface
 	var Receipt models.Receipt
 	dbActions.GetReceiptById(uint(id), &Receipt, utils.db)
 
+	if Receipt.ID == 0 {
+		http.Error(w, "not found", http.StatusNotFound)
+		return nil
+	}
+
 	return &Receipt
 }
 
@@ -46,11 +50,20 @@ func ReceiptIdImageGet(w http.ResponseWriter, r *http.Request, utils Utils) inte
 	var Receipt models.Receipt
 	dbActions.GetReceiptById(uint(id), &Receipt, utils.db)
 
+	// Make sure the image exists
+	if _, err := os.Stat(Receipt.ImagePath); os.IsNotExist(err) {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil
+	}
+
 	img, err := os.Open(Receipt.ImagePath)
+
 	if err != nil {
-		log.Fatal(err) // perhaps handle this nicer
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil
 	}
 	defer img.Close()
+
 	w.Header().Set("Content-Type", "image/jpeg") // <-- set the content-type header
 	io.Copy(w, img)
 
@@ -69,9 +82,14 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 	m := r.MultipartForm
 
 	//get the *fileheaders
-	files := m.File["image"][0]
+	files := m.File["image"]
 
-	file, err := files.Open()
+	if len(files) == 0 || len(files) > 1 {
+		http.Error(w, "No or more than 2 files where send in the 'image' header", http.StatusBadRequest)
+		return nil
+	}
+
+	file, err := files[0].Open()
 	defer file.Close()
 
 	if err != nil {
@@ -97,7 +115,7 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 	}
 
 	// Create a empty file and write the uploaded image
-	dst, err := os.Create("./declarations_upload/" + files.Filename)
+	dst, err := os.Create("./declarations_upload/" + files[0].Filename)
 	defer dst.Close()
 
 	// Save the file
@@ -105,7 +123,7 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 
 	// Save receipt in the database
 	ocrData, _ := json.Marshal(res)
-	receipt := models.Receipt{ImagePath: "./declarations_upload/" + files.Filename, Data: string(ocrData)}
+	receipt := models.Receipt{ImagePath: "./declarations_upload/" + files[0].Filename, Data: string(ocrData)}
 	dbActions.CreateReceipt(&receipt, utils.db)
 
 	return &models.Declaration{TotalPrice: float32(totalPrice), ReceiptID: receipt.ID}
