@@ -4,3 +4,13 @@ go:
   - 1.x
   - 1.7.x
   - 1.8.x
+
+
+script: # here's a build step block
+- nvm install stable
+- nvm use stable
+- npm install
+- node -v
+- nohup go run main.go :memory: --testdata > /dev/null 2>&1 &
+- npm install -g newman
+- newman run ./PostManTests/web.postman_collection.json --bail
