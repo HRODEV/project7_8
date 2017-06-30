@@ -18,19 +18,19 @@ type OcrService struct {
 	OcrData models.Ocr
 }
 
-func (OcrService *OcrService) SendImage(image multipart.File) (*models.Ocr, error) {
+func (OcrService *OcrService) SendImage(image io.Reader) (*models.Ocr, error) {
 	// Create a empty buffer and client
-	body := &bytes.Buffer{}
+	var body bytes.Buffer
 	client := &http.Client{}
 
 	// Write the multipart formdata
-	multipartWriter := multipart.NewWriter(body)
-	fw, _ := multipartWriter.CreateFormFile("image", "image.jpg")
+	multipartWriter := multipart.NewWriter(&body)
+	fw, _ := multipartWriter.CreateFormFile("image", "image.png")
 	io.Copy(fw, image)
 	multipartWriter.Close()
 
 	// Construct and send the request
-	req, _ := http.NewRequest("POST", "https://westus.api.cognitive.microsoft.com/vision/v1.0/ocr", body)
+	req, _ := http.NewRequest("POST", "https://westus.api.cognitive.microsoft.com/vision/v1.0/ocr", &body)
 	req.Header.Add("Content-Type", multipartWriter.FormDataContentType())
 	req.Header.Add("Ocp-Apim-Subscription-Key", "4187c1df33514aa7b412a1eefcacbde4")
 
@@ -43,6 +43,7 @@ func (OcrService *OcrService) SendImage(image multipart.File) (*models.Ocr, erro
 		return nil, err
 	}
 
+	// Format response as OCR model
 	var ocr *models.Ocr
 	json.Unmarshal(responseBody, &ocr)
 
