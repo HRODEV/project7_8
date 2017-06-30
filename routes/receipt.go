@@ -105,7 +105,7 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 
 	// Save receipt in the database
 	ocrData, _ := json.Marshal(res)
-	receipt := models.Receipt{ID: 0, ImagePath: "./declarations_upload/" + files.Filename, Data: string(ocrData)}
+	receipt := models.Receipt{ImagePath: "./declarations_upload/" + files.Filename, Data: string(ocrData)}
 	dbActions.CreateReceipt(&receipt, utils.db)
 
 	return &models.Declaration{TotalPrice: float32(totalPrice), ReceiptID: receipt.ID}
