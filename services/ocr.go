@@ -3,15 +3,15 @@ package services
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
-	"net/http"
 	"strconv"
 	"strings"
 
+	"fmt"
 	"github.com/HRODEV/project7_8/models"
+	"net/http"
 )
 
 type OcrService struct {
@@ -52,22 +52,24 @@ func (OcrService *OcrService) SendImage(image io.Reader) (*models.Ocr, error) {
 	return ocr, nil
 }
 
-func (OcrService *OcrService) GetBoxRightOfWord(wordToSearch string) []string {
+func (OcrService *OcrService) GetBoxRightOfWords(wordsToSearch []string) [][]string {
+	results := [][]string{}
+
 	for _, region := range OcrService.OcrData.Regions {
 		for _, line := range region.Lines {
 			for _, word := range line.Words {
-				if !strings.Contains(strings.ToLower(word.Text), strings.ToLower(wordToSearch)) {
-					continue
+				for _, search := range wordsToSearch {
+					if strings.Contains(strings.ToLower(word.Text), strings.ToLower(search)) {
+						foundBoundingBox := OcrService.explodeBoundingBox(word.BoundingBox)
+
+						results = append(results, OcrService.findWordsInBoudingBox(foundBoundingBox))
+					}
 				}
-
-				foundBoundingBox := OcrService.explodeBoundingBox(word.BoundingBox)
-
-				return OcrService.findWordsInBoudingBox(foundBoundingBox)
 			}
 		}
 	}
 
-	return []string{}
+	return results
 }
 
 func (OcrService *OcrService) findWordsInBoudingBox(box models.OcrBoundingBox) []string {
@@ -99,11 +101,6 @@ func (OcrService *OcrService) explodeBoundingBox(box string) models.OcrBoundingB
 	return models.OcrBoundingBox{x, y, width, height}
 }
 
-// Check if the given box lies in the boundings of b
-func (OcrService *OcrService) isInBoundingBox(b models.OcrBoundingBox, box models.OcrBoundingBox) bool {
-	return b.Y <= (box.Y+20) && (b.Y+b.Height) >= (box.Y+box.Height-20)
-}
-
 // Check if the given box lies intersects with b
 func (OcrService *OcrService) intersectWithBoundingBox(b models.OcrBoundingBox, box models.OcrBoundingBox) bool {
 	if b == box {
@@ -112,5 +109,5 @@ func (OcrService *OcrService) intersectWithBoundingBox(b models.OcrBoundingBox, 
 
 	middle := (box.Y + (box.Height / 2))
 
-	return middle > b.Y && middle < b.Y+b.Height
+	return middle > b.Y && middle < b.Y+b.Height && box.X < b.X+b.Width
 }

@@ -9,8 +9,10 @@ import (
 	"github.com/gorilla/mux"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -88,8 +90,26 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 		return nil
 	}
 
-	ocrString := ocrService.GetBoxRightOfWord("Totaal")
-	totalPrice, _ := strconv.ParseFloat(strings.Replace(ocrString, ",", ".", -1), 32)
+	var rgx = regexp.MustCompile(`\d+(\.\s?|,\s?|[^a-zA-Z\d])\d{2}`)
+
+	// @TODO Serach with list of regexes
+	ocrResult := ocrService.GetBoxRightOfWords([]string{"totaal", "totaa", "subtota"})
+	log.Print(ocrResult)
+	combinedResult := ""
+
+	// @TODO reverse resulte before regex
+	for _, result := range ocrResult {
+		for _, result2 := range result {
+			combinedResult += "." + result2
+		}
+	}
+
+	log.Print("raw result: " + combinedResult)
+	log.Print("regex result: " + strings.Replace(rgx.FindString(combinedResult), ",", ".", -1))
+
+	rgxResult := strings.Replace(rgx.FindString(combinedResult), ",", ".", -1)
+
+	totalPrice, _ := strconv.ParseFloat(rgxResult, 32)
 
 	// Save receipt in the database
 	ocrData, _ := json.Marshal(res)
