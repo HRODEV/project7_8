@@ -8,10 +8,12 @@ import (
 	"strconv"
 	"strings"
 
+	"bytes"
 	"github.com/HRODEV/project7_8/dbActions"
 	"github.com/HRODEV/project7_8/models"
 	"github.com/HRODEV/project7_8/services"
 	"github.com/gorilla/mux"
+	"io/ioutil"
 )
 
 func ReceiptIdGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
@@ -85,7 +87,7 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 	files := m.File["image"]
 
 	if len(files) == 0 || len(files) > 1 {
-		http.Error(w, "No or more than 2 files where send in the 'image' header", http.StatusBadRequest)
+		http.Error(w, "No file was found in the 'image' header or multiple files are send", http.StatusInternalServerError)
 		return nil
 	}
 
@@ -97,18 +99,6 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 		return nil
 	}
 
-	// Send request to Microsoft OCR
-	var ocrService = services.OcrService{}
-	res, err := ocrService.SendImage(file)
-
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return nil
-	}
-
-	ocrString := ocrService.GetBoxRightOfWord("Totaal")
-	totalPrice, _ := strconv.ParseFloat(strings.Replace(ocrString, ",", ".", -1), 32)
-
 	// Make sure the upload directory does exists
 	if _, err := os.Stat("./declarations_upload"); os.IsNotExist(err) {
 		os.Mkdir("./declarations_upload", os.ModePerm)
@@ -118,12 +108,27 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 	dst, err := os.Create("./declarations_upload/" + files[0].Filename)
 	defer dst.Close()
 
+	// Convert file to reader
+	imageData, _ := ioutil.ReadAll(file)
+
 	// Save the file
-	io.Copy(dst, file)
+	io.Copy(dst, bytes.NewReader(imageData))
+
+	// Send request to microsoft
+	ocrService := services.OcrService{}
+	res, err := ocrService.SendImage(bytes.NewReader(imageData))
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil
+	}
+
+	ocrResult := ocrService.GetBoxRightOfWord("totaal")
+	totalPrice, _ := strconv.ParseFloat(strings.Replace(ocrResult, ",", ".", -1), 32)
 
 	// Save receipt in the database
 	ocrData, _ := json.Marshal(res)
-	receipt := models.Receipt{ImagePath: "./declarations_upload/" + files[0].Filename, Data: string(ocrData)}
+	receipt := models.Receipt{ID: 0, ImagePath: "./declarations_upload/" + files[0].Filename, Data: string(ocrData)}
 	dbActions.CreateReceipt(&receipt, utils.db)
 
 	return &models.Declaration{TotalPrice: float32(totalPrice), ReceiptID: receipt.ID}
