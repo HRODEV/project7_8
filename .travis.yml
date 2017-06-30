@@ -7,10 +7,11 @@ go:
 
 
 script: # here's a build step block
+- go test -v ./...
 - nvm install stable
 - nvm use stable
 - npm install
 - node -v
-- nohup go run main.go :memory: --testdata > /dev/null 2>&1 &
+- nohup go run main.go ./db.db --testdata > /dev/null 2>&1 &
 - npm install -g newman
 - newman run ./PostManTests/web.postman_collection.json --bail

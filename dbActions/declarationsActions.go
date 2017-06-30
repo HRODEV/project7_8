@@ -2,6 +2,7 @@ package dbActions
 
 import (
 	"errors"
+
 	"github.com/HRODEV/project7_8/models"
 	"github.com/jinzhu/gorm"
 )
@@ -11,16 +12,15 @@ func GetDeclarations(declaration *[]models.Declaration, db *gorm.DB) {
 }
 
 func GetDeclarationById(id uint, declaration *models.Declaration, db *gorm.DB) {
-	db.First(declaration, id)
+	db.First(declaration, id).Related(&declaration.Receipt, "Receipt")
 }
 
 func CreateDeclaration(declaration *models.Declaration, db *gorm.DB) error {
 	if declaration.IsValid() {
 		db.Create(declaration)
 		return nil
-	} else {
-		return errors.New("Declaration Struct not valid")
 	}
+	return errors.New("Declaration Struct not valid")
 }
 
 func UpdateDeclarationById(id uint, declaration *models.Declaration, db *gorm.DB) error {
