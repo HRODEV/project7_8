@@ -93,7 +93,7 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 	var rgx = regexp.MustCompile(`\d+(\.\s?|,\s?|[^a-zA-Z\d])\d{2}`)
 
 	// @TODO Serach with list of regexes
-	ocrResult := ocrService.GetBoxRightOfWords([]string{"totaal", "totaa", "subtota"})
+	ocrResult := ocrService.GetWordsRightOf([]string{"totaal", "totaa", "subtota"})
 	log.Print(ocrResult)
 	combinedResult := ""
 

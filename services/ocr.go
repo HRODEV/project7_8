@@ -52,24 +52,30 @@ func (OcrService *OcrService) SendImage(image io.Reader) (*models.Ocr, error) {
 	return ocr, nil
 }
 
-func (OcrService *OcrService) GetBoxRightOfWords(wordsToSearch []string) [][]string {
+func (OcrService *OcrService) GetWordsRightOf(wordsToSearch []string) [][]string {
 	results := [][]string{}
 
+	OcrService.loop(func(word *models.OcrWord) {
+		for _, search := range wordsToSearch {
+			if strings.Contains(strings.ToLower(word.Text), strings.ToLower(search)) {
+				foundBoundingBox := OcrService.explodeBoundingBox(word.BoundingBox)
+
+				results = append(results, OcrService.findWordsInBoudingBox(foundBoundingBox))
+			}
+		}
+	})
+
+	return results
+}
+
+func (OcrService *OcrService) loop(action func(word *models.OcrWord)) {
 	for _, region := range OcrService.OcrData.Regions {
 		for _, line := range region.Lines {
 			for _, word := range line.Words {
-				for _, search := range wordsToSearch {
-					if strings.Contains(strings.ToLower(word.Text), strings.ToLower(search)) {
-						foundBoundingBox := OcrService.explodeBoundingBox(word.BoundingBox)
-
-						results = append(results, OcrService.findWordsInBoudingBox(foundBoundingBox))
-					}
-				}
+				action(&word)
 			}
 		}
 	}
-
-	return results
 }
 
 func (OcrService *OcrService) findWordsInBoudingBox(box models.OcrBoundingBox) []string {
@@ -107,7 +113,8 @@ func (OcrService *OcrService) intersectWithBoundingBox(b models.OcrBoundingBox, 
 		return false
 	}
 
-	middle := (box.Y + (box.Height / 2))
+	middle := box.Y + (box.Height / 2)
 
+	// True when `middle` intersects with box b; only searches on the right of b
 	return middle > b.Y && middle < b.Y+b.Height && box.X < b.X+b.Width
 }
