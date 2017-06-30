@@ -52,7 +52,7 @@ func (OcrService *OcrService) SendImage(image io.Reader) (*models.Ocr, error) {
 	return ocr, nil
 }
 
-func (OcrService *OcrService) GetBoxRightOfWord(wordToSearch string) string {
+func (OcrService *OcrService) GetBoxRightOfWord(wordToSearch string) []string {
 	for _, region := range OcrService.OcrData.Regions {
 		for _, line := range region.Lines {
 			for _, word := range line.Words {
@@ -67,30 +67,25 @@ func (OcrService *OcrService) GetBoxRightOfWord(wordToSearch string) string {
 		}
 	}
 
-	return ""
+	return []string{}
 }
 
-func (OcrService *OcrService) findWordsInBoudingBox(box models.OcrBoundingBox) string {
-	for _, region := range OcrService.OcrData.Regions {
-		if !OcrService.isInBoundingBox(OcrService.explodeBoundingBox(region.BoundingBox), box) {
-			continue
-		}
+func (OcrService *OcrService) findWordsInBoudingBox(box models.OcrBoundingBox) []string {
+	results := []string{}
 
+	for _, region := range OcrService.OcrData.Regions {
 		for _, line := range region.Lines {
-			if !OcrService.isInBoundingBox(OcrService.explodeBoundingBox(line.BoundingBox), box) {
-				continue
-			}
 			for _, word := range line.Words {
-				if !OcrService.isInBoundingBox(OcrService.explodeBoundingBox(word.BoundingBox), box) {
+				if !OcrService.intersectWithBoundingBox(OcrService.explodeBoundingBox(word.BoundingBox), box) {
 					continue
 				}
 
-				return word.Text
+				results = append(results, word.Text)
 			}
 		}
 	}
 
-	return ""
+	return results
 }
 
 func (OcrService *OcrService) explodeBoundingBox(box string) models.OcrBoundingBox {
@@ -107,4 +102,15 @@ func (OcrService *OcrService) explodeBoundingBox(box string) models.OcrBoundingB
 // Check if the given box lies in the boundings of b
 func (OcrService *OcrService) isInBoundingBox(b models.OcrBoundingBox, box models.OcrBoundingBox) bool {
 	return b.Y <= (box.Y+20) && (b.Y+b.Height) >= (box.Y+box.Height-20)
+}
+
+// Check if the given box lies intersects with b
+func (OcrService *OcrService) intersectWithBoundingBox(b models.OcrBoundingBox, box models.OcrBoundingBox) bool {
+	if b == box {
+		return false
+	}
+
+	middle := (box.Y + (box.Height / 2))
+
+	return middle > b.Y && middle < b.Y+b.Height
 }
