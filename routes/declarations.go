@@ -2,12 +2,16 @@ package project7_8
 
 import (
 	"encoding/json"
+	"io"
+	"io/ioutil"
+	"log"
+	"net/http"
+	"os"
+	"strconv"
+
 	"github.com/HRODEV/project7_8/dbActions"
 	"github.com/HRODEV/project7_8/models"
 	"github.com/gorilla/mux"
-	"io/ioutil"
-	"net/http"
-	"strconv"
 )
 
 func DeclarationsGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
@@ -53,6 +57,36 @@ func DeclarationsIdGet(w http.ResponseWriter, r *http.Request, utils Utils) inte
 	}
 
 	return &declaration
+}
+
+func DeclarationsIdGetImage(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
+	// Get request url parameters
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil
+	}
+
+	// Get declaration with the specified ID
+	var declaration models.Declaration
+	dbActions.GetDeclarationById(uint(id), &declaration, utils.db)
+
+	if declaration.ID == 0 {
+		http.Error(w, "Not found", http.StatusNotFound)
+		return nil
+	}
+
+	img, err := os.Open(declaration.Receipt.ImagePath)
+	if err != nil {
+		log.Fatal(err) // perhaps handle this nicer
+	}
+	defer img.Close()
+	w.Header().Set("Content-Type", "image/jpeg") // <-- set the content-type header
+	io.Copy(w, img)
+
+	return nil
 }
 
 func DeclarationsIdPatch(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {

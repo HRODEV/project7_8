@@ -21,12 +21,20 @@ func insertTestData(db *gorm.DB) {
 		dbActions.CreateUser(&user, db)
 	}
 
+	receipts := []models.Receipt{
+		{ImagePath: "./declaration_upload/123456789.jpg"},
+	}
+	for _, receipt := range receipts {
+		dbActions.CreateReceipt(&receipt, db)
+	}
+
 	declarations := []models.Declaration{
-		{Title: "first declaration", TotalPrice: 95.32, VATPrice: (95.32 / 121 * 21), Date: "07-08-2016", UserID: uint(1)},
+		{Title: "first declaration", TotalPrice: 95.32, VATPrice: (95.32 / 121 * 21), Date: "07-08-2016", UserID: uint(1), ReceiptID: 1},
 	}
 	for _, declaration := range declarations {
 		dbActions.CreateDeclaration(&declaration, db)
 	}
+
 }
 
 func main() {

@@ -87,17 +87,24 @@ var routes = Routes{
 	},
 
 	Route{
-		"DeclarationsIdDelete",
-		"DELETE",
-		"/declarations/{id}",
-		DeclarationsIdDelete,
-	},
-
-	Route{
 		"DeclarationsIdGet",
 		"GET",
 		"/declarations/{id}",
 		DeclarationsIdGet,
+	},
+
+	Route{
+		"DeclarationsIdGetImage",
+		"GET",
+		"/declarations/{id}/image",
+		DeclarationsIdGetImage,
+	},
+
+	Route{
+		"DeclarationsIdDelete",
+		"DELETE",
+		"/declarations/{id}",
+		DeclarationsIdDelete,
 	},
 
 	Route{

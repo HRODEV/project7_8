@@ -10,7 +10,7 @@ type Declaration struct {
 	Project             *Project
 	ProjectID           uint `sql:"type:integer REFERENCES projects(id)"`
 	StoreName           string
-	Receipt             *Receipt
+	Receipt             Receipt
 	ReceiptID           uint `sql:"type:integer REFERENCES receipts(id)"`
 	User                *User
 	UserID              uint `sql:"type:integer REFERENCES users(id)"`
