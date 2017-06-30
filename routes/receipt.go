@@ -2,6 +2,7 @@ package project7_8
 
 import (
 	"encoding/json"
+	"github.com/HRODEV/project7_8/dbActions"
 	"github.com/HRODEV/project7_8/models"
 	"github.com/HRODEV/project7_8/services"
 	"github.com/gorilla/mux"
@@ -24,18 +25,13 @@ func ReceiptIdGet(w http.ResponseWriter, r *http.Request, utils Utils) interface
 
 	// Get receipt with the specified ID
 	var Receipt models.Receipt
-
-	if utils.db.Where("ID = ?", id).Find(&Receipt).RecordNotFound() {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("Not Found"))
-	}
+	dbActions.GetReceiptById(uint(id), &Receipt, utils.db)
 
 	return &Receipt
 }
 
 func ReceiptIdImageGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Not implemented yet"))
+	http.Error(w, "Not implemented yet", http.StatusNotImplemented)
 	return nil
 }
 
@@ -88,7 +84,7 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 	// Save receipt in the database
 	ocrData, _ := json.Marshal(res)
 	receipt := models.Receipt{ID: 0, ImagePath: "./declarations_upload/" + files.Filename, Data: string(ocrData)}
-	utils.db.Create(&receipt)
+	dbActions.CreateReceipt(&receipt, utils.db)
 
 	return &models.Declaration{TotalPrice: float32(totalPrice), ReceiptID: receipt.ID}
 }

@@ -2,7 +2,6 @@ package project7_8
 
 import (
 	"encoding/json"
-	"errors"
 	"github.com/HRODEV/project7_8/dbActions"
 	"github.com/HRODEV/project7_8/models"
 	"github.com/gorilla/mux"
@@ -13,9 +12,7 @@ import (
 )
 
 func UserAuthGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
-	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Not implemented yet"))
-
+	http.Error(w, "Not implemented yet", http.StatusNotImplemented)
 	return nil
 }
 
@@ -45,5 +42,6 @@ func UserPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
 }
 
 func UserProjectsGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
-	return errors.New("not yet implemented")
+	http.Error(w, "Not implemented yet", http.StatusNotImplemented)
+	return nil
 }

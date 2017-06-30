@@ -11,7 +11,7 @@ import (
 )
 
 func DeclarationsGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
-	declarations := []models.Declaration{}
+	var declarations []models.Declaration
 	dbActions.GetDeclarations(&declarations, utils.db)
 
 	return &declarations
@@ -44,7 +44,7 @@ func DeclarationsIdGet(w http.ResponseWriter, r *http.Request, utils Utils) inte
 	}
 
 	// Get declaration with the specified ID
-	declaration := models.Declaration{}
+	var declaration models.Declaration
 	dbActions.GetDeclarationById(uint(id), &declaration, utils.db)
 
 	if declaration.ID == 0 {
@@ -70,14 +70,27 @@ func DeclarationsIdPatch(w http.ResponseWriter, r *http.Request, utils Utils) in
 	}
 
 	// Update declaration
-	dbActions.UpdateDeclarationById(uint(id), &declaration, utils.db)
+	dbError := dbActions.UpdateDeclarationById(uint(id), &declaration, utils.db)
+
+	if dbError != nil {
+		if dbError.Error() == "not found" {
+			http.Error(w, dbError.Error(), http.StatusNotFound)
+			return nil
+		}
+
+		http.Error(w, dbError.Error(), http.StatusInternalServerError)
+		return nil
+	}
+
+	// Get the modified declaration to return
+	dbActions.GetDeclarationById(uint(id), &declaration, utils.db)
 
 	return &declaration
 }
 
 func DeclarationsPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
 	// Convert request body to interface
-	declaration := models.Declaration{}
+	var declaration models.Declaration
 	reqBody, _ := ioutil.ReadAll(r.Body)
 	err := json.Unmarshal(reqBody, &declaration)
 

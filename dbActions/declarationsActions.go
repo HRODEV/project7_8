@@ -24,14 +24,21 @@ func CreateDeclaration(declaration *models.Declaration, db *gorm.DB) error {
 }
 
 func UpdateDeclarationById(id uint, declaration *models.Declaration, db *gorm.DB) error {
-	if declaration.IsValid() {
-		currentDeclarations := models.Declaration{}
-		db.First(&currentDeclarations, id)
-		db.Model(&currentDeclarations).Update(&declaration)
-		return nil
-	} else {
-		return errors.New("Declaration Struct not valid")
+	// Check if the given struct is valid
+	if !declaration.IsValid() {
+		return errors.New("The given declaration struct is not valid")
 	}
+
+	// Get the latest declaration to compare
+	var currentDeclarations models.Declaration
+
+	if db.First(&currentDeclarations, id).RecordNotFound() {
+		return errors.New("not found")
+	}
+
+	db.Model(&currentDeclarations).Update(&declaration)
+
+	return nil
 }
 
 func DeleteDeclarationById(id uint, db *gorm.DB) {
