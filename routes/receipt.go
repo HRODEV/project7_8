@@ -9,10 +9,8 @@ import (
 	"github.com/gorilla/mux"
 	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -90,26 +88,16 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 		return nil
 	}
 
-	var rgx = regexp.MustCompile(`\d+(\.\s?|,\s?|[^a-zA-Z\d])\d{2}`)
+	// Find the price
+	ocrResult := ocrService.GetWordsRightOfRgx([][]string{{`\A(?:tota)(?:a)?(?:l)?\z`, `\d+(\.\s?|,\s?|[^a-zA-Z\d])\d{2}`}})
 
-	// @TODO Move the processing of the result to the 'OcrService'
-	ocrResult := ocrService.GetWordsRightOfRgx([]string{`(?:s)?(?:u)?(?:b)?(?:tota)(?:a)?(?:l)?`})
-	log.Print(ocrResult)
-	combinedResult := ""
+	var totalPrice = 0.0
 
-	// @TODO reverse resulte before regex
-	for _, result := range ocrResult {
-		for _, result2 := range result {
-			combinedResult += "." + result2
-		}
+	if len(ocrResult) > 0 {
+		totalPrice, _ = strconv.ParseFloat(strings.Replace(ocrResult[0], ",", ".", -1), 32)
+	} else {
+		totalPrice = 0
 	}
-
-	log.Print("raw result: " + combinedResult)
-	log.Print("regex result: " + strings.Replace(rgx.FindString(combinedResult), ",", ".", -1))
-
-	rgxResult := strings.Replace(rgx.FindString(combinedResult), ",", ".", -1)
-
-	totalPrice, _ := strconv.ParseFloat(rgxResult, 32)
 
 	// Save receipt in the database
 	ocrData, _ := json.Marshal(res)

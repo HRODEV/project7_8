@@ -11,6 +11,7 @@ import (
 
 	"fmt"
 	"github.com/HRODEV/project7_8/models"
+	"log"
 	"net/http"
 	"regexp"
 )
@@ -54,7 +55,7 @@ func (OcrService *OcrService) SendImage(image io.Reader) (*models.Ocr, error) {
 }
 
 // Loop
-func (OcrService *OcrService) loopAccross(action func(word *models.OcrWord)) {
+func (OcrService *OcrService) loopAccrossWords(action func(word *models.OcrWord)) {
 	for _, region := range OcrService.OcrData.Regions {
 		for _, line := range region.Lines {
 			for _, word := range line.Words {
@@ -65,33 +66,50 @@ func (OcrService *OcrService) loopAccross(action func(word *models.OcrWord)) {
 }
 
 // Get the the words right of the given regexes
-func (OcrService *OcrService) GetWordsRightOfRgx(rgxToSearch []string) [][]string {
-	results := [][]string{}
+func (OcrService *OcrService) GetWordsRightOfRgx(rgxToSearch [][]string) []string {
+	tmpResults := [][]string{}
 
-	OcrService.loopAccross(func(word *models.OcrWord) {
-		for _, rgx := range rgxToSearch {
-			var rgxResult = regexp.MustCompile(rgx).FindString(strings.ToLower(word.Text))
+	// Loop trough all words and save the results of each regex in it's own array [[result1], [result2], etc]
+	OcrService.loopAccrossWords(func(word *models.OcrWord) {
+		for i, rgxs := range rgxToSearch {
+			var rgxResult = regexp.MustCompile(rgxs[0]).FindString(strings.ToLower(word.Text))
 
 			if rgxResult == "" {
 				continue
 			}
 
 			foundBoundingBox := OcrService.explodeBoundingBox(word.BoundingBox)
-			results = append(results, OcrService.findWordsRightOfBoudingBox(foundBoundingBox))
+			results := OcrService.findWordsRightOfBoudingBox(foundBoundingBox)
+
+			// Since the search regexes are applied to each word, there are more than 1 matches, so we append
+			// the result if there is allread a value, otherwise create a new array
+			if len(tmpResults) == 0 || len(tmpResults) < i-1 {
+				tmpResults = append(tmpResults, []string{})
+			}
+
+			tmpResults[i] = append(tmpResults[i], results...)
 		}
 	})
 
-	// Flatt and reverse array since the result we want is most likely on the bottom
-	//combinedReverseResult := ""
-	//for _, result := range results {
-	//	for _, result2 := range result {
-	//		combinedReverseResult += "." + result2
-	//	}
-	//}
-	//
-	//return combinedReverseResult
+	// Loop trough the tmpResults and apply the result regex to get the final results
+	var finalResults = []string{}
 
-	return results
+	for i, tmpResult := range tmpResults {
+		var resultRgx = regexp.MustCompile(rgxToSearch[i][1])
+
+		// Contact the results to apply the resultrgx
+		var contactinatedResult = ""
+
+		for _, result := range tmpResult {
+			contactinatedResult += "." + result
+		}
+
+		log.Print(contactinatedResult)
+
+		finalResults = append(finalResults, resultRgx.FindString(contactinatedResult))
+	}
+
+	return finalResults
 }
 
 // Get all words right of the given boundingBox
