@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"github.com/HRODEV/project7_8/models"
 	"net/http"
+	"regexp"
 )
 
 type OcrService struct {
@@ -52,23 +53,8 @@ func (OcrService *OcrService) SendImage(image io.Reader) (*models.Ocr, error) {
 	return ocr, nil
 }
 
-func (OcrService *OcrService) GetWordsRightOf(wordsToSearch []string) [][]string {
-	results := [][]string{}
-
-	OcrService.loop(func(word *models.OcrWord) {
-		for _, search := range wordsToSearch {
-			if strings.Contains(strings.ToLower(word.Text), strings.ToLower(search)) {
-				foundBoundingBox := OcrService.explodeBoundingBox(word.BoundingBox)
-
-				results = append(results, OcrService.findWordsInBoudingBox(foundBoundingBox))
-			}
-		}
-	})
-
-	return results
-}
-
-func (OcrService *OcrService) loop(action func(word *models.OcrWord)) {
+// Loop
+func (OcrService *OcrService) loopAccross(action func(word *models.OcrWord)) {
 	for _, region := range OcrService.OcrData.Regions {
 		for _, line := range region.Lines {
 			for _, word := range line.Words {
@@ -78,13 +64,44 @@ func (OcrService *OcrService) loop(action func(word *models.OcrWord)) {
 	}
 }
 
-func (OcrService *OcrService) findWordsInBoudingBox(box models.OcrBoundingBox) []string {
+// Get the the words right of the given regexes
+func (OcrService *OcrService) GetWordsRightOfRgx(rgxToSearch []string) [][]string {
+	results := [][]string{}
+
+	OcrService.loopAccross(func(word *models.OcrWord) {
+		for _, rgx := range rgxToSearch {
+			var rgxResult = regexp.MustCompile(rgx).FindString(strings.ToLower(word.Text))
+
+			if rgxResult == "" {
+				continue
+			}
+
+			foundBoundingBox := OcrService.explodeBoundingBox(word.BoundingBox)
+			results = append(results, OcrService.findWordsRightOfBoudingBox(foundBoundingBox))
+		}
+	})
+
+	// Flatt and reverse array since the result we want is most likely on the bottom
+	//combinedReverseResult := ""
+	//for _, result := range results {
+	//	for _, result2 := range result {
+	//		combinedReverseResult += "." + result2
+	//	}
+	//}
+	//
+	//return combinedReverseResult
+
+	return results
+}
+
+// Get all words right of the given boundingBox
+func (OcrService *OcrService) findWordsRightOfBoudingBox(box models.OcrBoundingBox) []string {
 	results := []string{}
 
 	for _, region := range OcrService.OcrData.Regions {
 		for _, line := range region.Lines {
 			for _, word := range line.Words {
-				if !OcrService.intersectWithBoundingBox(OcrService.explodeBoundingBox(word.BoundingBox), box) {
+				if !OcrService.intersectWithBoundingBox(box, OcrService.explodeBoundingBox(word.BoundingBox)) {
 					continue
 				}
 
@@ -96,6 +113,7 @@ func (OcrService *OcrService) findWordsInBoudingBox(box models.OcrBoundingBox) [
 	return results
 }
 
+// Explode a boundingbox to a `OcrBoundingBox` struct
 func (OcrService *OcrService) explodeBoundingBox(box string) models.OcrBoundingBox {
 	splittedBox := strings.Split(box, ",")
 
@@ -107,14 +125,14 @@ func (OcrService *OcrService) explodeBoundingBox(box string) models.OcrBoundingB
 	return models.OcrBoundingBox{x, y, width, height}
 }
 
-// Check if the given box lies intersects with b
-func (OcrService *OcrService) intersectWithBoundingBox(b models.OcrBoundingBox, box models.OcrBoundingBox) bool {
-	if b == box {
+// Check if the given box intersects with b
+func (OcrService *OcrService) intersectWithBoundingBox(knownBox models.OcrBoundingBox, box models.OcrBoundingBox) bool {
+	if knownBox == box {
 		return false
 	}
 
-	middle := box.Y + (box.Height / 2)
+	// Calculate the middle of the knownbox
+	middle := knownBox.Y + (knownBox.Height / 2)
 
-	// True when `middle` intersects with box b; only searches on the right of b
-	return middle > b.Y && middle < b.Y+b.Height && box.X < b.X+b.Width
+	return middle > box.Y && middle < box.Y+box.Height && box.X > knownBox.X+knownBox.Width
 }
