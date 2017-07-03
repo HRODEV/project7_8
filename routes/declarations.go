@@ -54,6 +54,9 @@ func DeclarationsIdGet(w http.ResponseWriter, r *http.Request, utils Utils) inte
 	if declaration.ID == 0 {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return nil
+	} else if declaration.ID != utils.currentUser.ID {
+		http.Error(w, "Forbidden", http.StatusForbidden)
+		return nil
 	}
 
 	return &declaration
@@ -75,6 +78,9 @@ func DeclarationsIdGetImage(w http.ResponseWriter, r *http.Request, utils Utils)
 
 	if declaration.ID == 0 {
 		http.Error(w, "Not found", http.StatusNotFound)
+		return nil
+	} else if declaration.ID != utils.currentUser.ID {
+		http.Error(w, "Not found", http.StatusForbidden)
 		return nil
 	}
 
@@ -132,6 +138,9 @@ func DeclarationsPost(w http.ResponseWriter, r *http.Request, utils Utils) inter
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return nil
 	}
+
+	// Append userid
+	declaration.UserID = utils.currentUser.ID
 
 	// Create declaration
 	dbActions.CreateDeclaration(&declaration, utils.db)

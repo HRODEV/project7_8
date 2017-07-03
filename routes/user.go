@@ -6,11 +6,9 @@ import (
 	"github.com/HRODEV/project7_8/models"
 	"github.com/HRODEV/project7_8/services"
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gorilla/mux"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"io/ioutil"
 	"net/http"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -57,13 +55,10 @@ func UserAuthGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 }
 
 func UserGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
-	vars := mux.Vars(r)
-	id, _ := strconv.ParseUint(vars["id"], 10, 32)
+	var user models.User
+	dbActions.GetUserByID(utils.currentUser.ID, &user, utils.db)
 
-	var user *models.User
-	dbActions.GetUserByID(uint(id), user, utils.db)
-
-	return user
+	return &user
 }
 
 //

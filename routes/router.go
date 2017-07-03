@@ -135,63 +135,63 @@ var routes = Routes{
 		"DeclarationsIdGet",
 		"GET",
 		"/declarations/{id}",
-		DeclarationsIdGet,
+		requireAuthentication(DeclarationsIdGet),
 	},
 
 	Route{
 		"DeclarationsIdGetImage",
 		"GET",
 		"/declarations/{id}/image",
-		DeclarationsIdGetImage,
+		requireAuthentication(DeclarationsIdGetImage),
 	},
 
 	Route{
 		"DeclarationsIdDelete",
 		"DELETE",
 		"/declarations/{id}",
-		DeclarationsIdDelete,
+		requireAuthentication(DeclarationsIdDelete),
 	},
 
 	Route{
 		"DeclarationsIdPatch",
 		"PATCH",
 		"/declarations/{id}",
-		DeclarationsIdPatch,
+		requireAuthentication(DeclarationsIdPatch),
 	},
 
 	Route{
 		"DeclarationsPost",
 		"POST",
 		"/declarations",
-		DeclarationsPost,
+		requireAuthentication(DeclarationsPost),
 	},
 
 	Route{
 		"ReceiptIdGet",
 		"GET",
 		"/receipt/{id}",
-		ReceiptIdGet,
+		requireAuthentication(ReceiptIdGet),
 	},
 
 	Route{
 		"ReceiptIdImageGet",
 		"GET",
 		"/receipt/{id}/image",
-		ReceiptIdImageGet,
+		requireAuthentication(ReceiptIdImageGet),
 	},
 
 	Route{
 		"ReceiptPost",
 		"POST",
 		"/receipt",
-		ReceiptPost,
+		requireAuthentication(ReceiptPost),
 	},
 
 	Route{
 		"UserGet",
 		"GET",
 		"/user",
-		UserGet,
+		requireAuthentication(UserGet),
 	},
 
 	Route{
@@ -212,6 +212,6 @@ var routes = Routes{
 		"UserProjectsGet",
 		"GET",
 		"/user/projects",
-		UserProjectsGet,
+		requireAuthentication(UserProjectsGet),
 	},
 }
