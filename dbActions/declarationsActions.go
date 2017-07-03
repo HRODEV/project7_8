@@ -7,8 +7,8 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-func GetDeclarations(declaration *[]models.Declaration, db *gorm.DB) {
-	db.Find(&declaration)
+func GetDeclarationsForUser(userId uint, declaration *[]models.Declaration, db *gorm.DB) {
+	db.Where("user_id = ?", userId).Find(&declaration)
 }
 
 func GetDeclarationById(id uint, declaration *models.Declaration, db *gorm.DB) {

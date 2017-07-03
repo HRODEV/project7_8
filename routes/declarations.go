@@ -16,7 +16,7 @@ import (
 
 func DeclarationsGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
 	var declarations []models.Declaration
-	dbActions.GetDeclarations(&declarations, utils.db)
+	dbActions.GetDeclarationsForUser(utils.currentUser.ID, &declarations, utils.db)
 
 	return &declarations
 }
