@@ -127,14 +127,18 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 		//{`^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$`, `^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$`},
 	}, "right")
 
-	ocrResult2 := ocrService.GetWordsOfRegex([][]string{
+	dateResult := ocrService.GetWordsOfRegex([][]string{
 		{`^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$`, ``},
 	}, "none")
+
+	vatResult := ocrService.GetWordsOfRegex([][]string{
+		{`\A(?:b)(?:t)?(?:w)?\z`, `\d+(\.\s?|,\s?|[^a-zA-Z\d])\d{2}`},
+	}, "right")
 
 	var totalPrice = 0.0
 
 	log.Println(ocrResult)
-	log.Println(ocrResult2)
+	log.Println(dateResult)
 
 	if len(ocrResult) > 0 {
 		totalPrice, _ = strconv.ParseFloat(strings.Replace(ocrResult[0], ",", ".", -1), 32)
@@ -142,10 +146,17 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 		totalPrice = 0
 	}
 
+	var totalVat = 0.0
+	if len(vatResult) > 0 {
+		totalVat, _ = strconv.ParseFloat(strings.Replace(vatResult[0], ",", ".", -1), 32)
+	} else {
+		totalVat = 0
+	}
+
 	var date = ""
-	if len(ocrResult2) > 0 {
+	if len(dateResult) > 0 {
 		r := strings.NewReplacer(".", "/", ",", "/")
-		date = r.Replace(ocrResult2[0])
+		date = r.Replace(dateResult[0])
 	}
 
 	// Save receipt in the database
@@ -153,5 +164,5 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 	receipt := models.Receipt{ID: 0, ImagePath: "./declarations_upload/" + files[0].Filename, Data: string(ocrData)}
 	dbActions.CreateReceipt(&receipt, utils.db)
 
-	return &models.Declaration{TotalPrice: float32(totalPrice), Date: date, ReceiptID: receipt.ID}
+	return &models.Declaration{TotalPrice: float32(totalPrice), Date: date, ReceiptID: receipt.ID, VATPrice: float32(totalVat)}
 }
