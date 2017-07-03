@@ -3,16 +3,19 @@ package project7_8
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/HRODEV/project7_8/dbActions"
-	"github.com/HRODEV/project7_8/models"
-	"github.com/HRODEV/project7_8/services"
-	"github.com/gorilla/mux"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+
+	"log"
+
+	"github.com/HRODEV/project7_8/dbActions"
+	"github.com/HRODEV/project7_8/models"
+	"github.com/HRODEV/project7_8/services"
+	"github.com/gorilla/mux"
 )
 
 func ReceiptIdGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
@@ -118,9 +121,24 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 	}
 
 	// Find the price
-	ocrResult := ocrService.GetWordsRightOfRgx([][]string{{`\A(?:tota)(?:a)?(?:l)?\z`, `\d+(\.\s?|,\s?|[^a-zA-Z\d])\d{2}`}})
+	ocrResult := ocrService.GetWordsOfRegex([][]string{
+		{`\A(?:tota)(?:a)?(?:l)?\z`, `\d+(\.\s?|,\s?|[^a-zA-Z\d])\d{2}`},
+		//{`\A(?:beta)(?:a)?(?:l)(?:d)?\z`, `\d+(\.\s?|,\s?|[^a-zA-Z\d])\d{2}`},
+		//{`^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$`, `^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$`},
+	}, "right")
+
+	dateResult := ocrService.GetWordsOfRegex([][]string{
+		{`^[0-3]?[0-9].[0-3]?[0-9].(?:[0-9]{2})?[0-9]{2}$`, ``},
+	}, "none")
+
+	vatResult := ocrService.GetWordsOfRegex([][]string{
+		{`\A(?:b)(?:t)?(?:w)?\z`, `\d+(\.\s?|,\s?|[^a-zA-Z\d])\d{2}`},
+	}, "right")
 
 	var totalPrice = 0.0
+
+	log.Println(ocrResult)
+	log.Println(dateResult)
 
 	if len(ocrResult) > 0 {
 		totalPrice, _ = strconv.ParseFloat(strings.Replace(ocrResult[0], ",", ".", -1), 32)
@@ -128,10 +146,23 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 		totalPrice = 0
 	}
 
+	var totalVat = 0.0
+	if len(vatResult) > 0 {
+		totalVat, _ = strconv.ParseFloat(strings.Replace(vatResult[0], ",", ".", -1), 32)
+	} else {
+		totalVat = 0
+	}
+
+	var date = ""
+	if len(dateResult) > 0 {
+		r := strings.NewReplacer(".", "/", ",", "/")
+		date = r.Replace(dateResult[0])
+	}
+
 	// Save receipt in the database
 	ocrData, _ := json.Marshal(res)
 	receipt := models.Receipt{ID: 0, ImagePath: "./declarations_upload/" + files[0].Filename, Data: string(ocrData)}
 	dbActions.CreateReceipt(&receipt, utils.db)
 
-	return &models.Declaration{TotalPrice: float32(totalPrice), ReceiptID: receipt.ID}
+	return &models.Declaration{TotalPrice: float32(totalPrice), Date: date, ReceiptID: receipt.ID, VATPrice: float32(totalVat)}
 }

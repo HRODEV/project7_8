@@ -10,10 +10,11 @@ import (
 	"strings"
 
 	"fmt"
-	"github.com/HRODEV/project7_8/models"
 	"log"
 	"net/http"
 	"regexp"
+
+	"github.com/HRODEV/project7_8/models"
 )
 
 type OcrService struct {
@@ -66,21 +67,26 @@ func (OcrService *OcrService) loopAccrossWords(action func(word *models.OcrWord)
 }
 
 // Get the the words right of the given regexes
-func (OcrService *OcrService) GetWordsRightOfRgx(rgxToSearch [][]string) []string {
+func (OcrService *OcrService) GetWordsOfRegex(rgxToSearch [][]string, orientation string) []string {
 	tmpResults := [][]string{}
+	var onresult []string
 
 	// Loop trough all words and save the results of each regex in it's own array [[result1], [result2], etc]
 	OcrService.loopAccrossWords(func(word *models.OcrWord) {
 		for i, rgxs := range rgxToSearch {
 			var rgxResult = regexp.MustCompile(rgxs[0]).FindString(strings.ToLower(word.Text))
-
+			var results []string
 			if rgxResult == "" {
 				continue
 			}
 
-			foundBoundingBox := OcrService.explodeBoundingBox(word.BoundingBox)
-			results := OcrService.findWordsRightOfBoudingBox(foundBoundingBox)
-
+			foundBoundingBox := OcrService.splitBoundingBox(word.BoundingBox)
+			if orientation == "right" {
+				result := OcrService.findWordsRightOfBoudingBox(foundBoundingBox)
+				results = append(results, result...)
+			} else {
+				onresult = append(results, rgxResult)
+			}
 			// Since the search regexes are applied to each word, there are more than 1 matches, so we append
 			// the result if there is allread a value, otherwise create a new array
 			if len(tmpResults) == 0 || len(tmpResults) < i-1 {
@@ -94,22 +100,26 @@ func (OcrService *OcrService) GetWordsRightOfRgx(rgxToSearch [][]string) []strin
 	// Loop trough the tmpResults and apply the result regex to get the final results
 	var finalResults = []string{}
 
-	for i, tmpResult := range tmpResults {
-		var resultRgx = regexp.MustCompile(rgxToSearch[i][1])
+	if orientation == "right" {
+		for i, tmpResult := range tmpResults {
+			var resultRgx = regexp.MustCompile(rgxToSearch[i][1])
 
-		// Contact the results to apply the resultrgx
-		var contactinatedResult = ""
+			// Contact the results to apply the resultrgx
+			var contactinatedResult = ""
 
-		for _, result := range tmpResult {
-			contactinatedResult += "." + result
+			for _, result := range tmpResult {
+				contactinatedResult += "." + result
+			}
+
+			log.Print(contactinatedResult)
+
+			finalResults = append(finalResults, resultRgx.FindString(contactinatedResult))
+
 		}
-
-		log.Print(contactinatedResult)
-
-		finalResults = append(finalResults, resultRgx.FindString(contactinatedResult))
+		return finalResults
+	} else {
+		return onresult
 	}
-
-	return finalResults
 }
 
 // Get all words right of the given boundingBox
@@ -119,7 +129,7 @@ func (OcrService *OcrService) findWordsRightOfBoudingBox(box models.OcrBoundingB
 	for _, region := range OcrService.OcrData.Regions {
 		for _, line := range region.Lines {
 			for _, word := range line.Words {
-				if !OcrService.intersectWithBoundingBox(box, OcrService.explodeBoundingBox(word.BoundingBox)) {
+				if !OcrService.intersectWithBoundingBox(box, OcrService.splitBoundingBox(word.BoundingBox)) {
 					continue
 				}
 
@@ -132,7 +142,7 @@ func (OcrService *OcrService) findWordsRightOfBoudingBox(box models.OcrBoundingB
 }
 
 // Explode a boundingbox to a `OcrBoundingBox` struct
-func (OcrService *OcrService) explodeBoundingBox(box string) models.OcrBoundingBox {
+func (OcrService *OcrService) splitBoundingBox(box string) models.OcrBoundingBox {
 	splittedBox := strings.Split(box, ",")
 
 	x, _ := strconv.Atoi(splittedBox[0])
