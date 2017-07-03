@@ -33,7 +33,36 @@ func ReceiptIdGet(w http.ResponseWriter, r *http.Request, utils Utils) interface
 }
 
 func ReceiptIdImageGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
-	http.Error(w, "Not implemented yet", http.StatusNotImplemented)
+	// Get request url parameters
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil
+	}
+
+	// Get receipt with the specified ID
+	var Receipt models.Receipt
+	dbActions.GetReceiptById(uint(id), &Receipt, utils.db)
+
+	// Make sure the image exists
+	if _, err := os.Stat(Receipt.ImagePath); os.IsNotExist(err) {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil
+	}
+
+	img, err := os.Open(Receipt.ImagePath)
+
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return nil
+	}
+	defer img.Close()
+
+	w.Header().Set("Content-Type", "image/jpeg") // <-- set the content-type header
+	io.Copy(w, img)
+
 	return nil
 }
 
