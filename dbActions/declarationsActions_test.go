@@ -7,13 +7,17 @@ import (
 )
 
 func TestGetDeclarations(t *testing.T) {
+	// Create user for the declaration
+	user := models.User{Email: "test@test.com", FirstName: "Test", LastName: "User", Password: "Password"}
+	db.Create(&user)
+
 	// Create declaration to receive
-	newDeclaration := models.Declaration{ID: 0, Title: "declaration", TotalPrice: 10, VATPrice: 2.10, Date: "2017-07-09T12:32:00", Description: "description", ReceiptID: 0, UserID: 0, ProjectID: 0}
+	newDeclaration := models.Declaration{ID: 0, Title: "declaration", TotalPrice: 10, VATPrice: 2.10, Date: "2017-07-09T12:32:00", Description: "description", ReceiptID: 0, UserID: user.ID, ProjectID: 0}
 	CreateDeclaration(&newDeclaration, db)
 
 	var declaration []models.Declaration
 
-	GetDeclarations(&declaration, db)
+	GetDeclarationsForUser(user.ID, &declaration, db)
 
 	if len(declaration) == 0 {
 		t.Error("at least one declartion should be received")
