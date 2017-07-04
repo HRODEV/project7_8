@@ -54,7 +54,7 @@ func DeclarationsIdGet(w http.ResponseWriter, r *http.Request, utils Utils) inte
 	if declaration.ID == 0 {
 		http.Error(w, "Not found", http.StatusNotFound)
 		return nil
-	} else if declaration.ID != utils.currentUser.ID {
+	} else if declaration.UserID != utils.currentUser.ID {
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return nil
 	}

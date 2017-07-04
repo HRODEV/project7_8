@@ -177,7 +177,7 @@ var routes = Routes{
 		"ReceiptIdImageGet",
 		"GET",
 		"/receipt/{id}/image",
-		requireAuthentication(ReceiptIdImageGet),
+		ReceiptIdImageGet,
 	},
 
 	Route{

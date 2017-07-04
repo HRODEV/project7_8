@@ -16,7 +16,7 @@ func CreateUser(user *models.User, db *gorm.DB) error {
 		db.Create(user)
 		return nil
 	} else {
-		return errors.New("User Struct not valid")
+		return errors.New("No valid password or email given. Pasword must be at least 8 characters")
 	}
 
 }
