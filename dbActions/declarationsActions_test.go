@@ -15,11 +15,11 @@ func TestGetDeclarations(t *testing.T) {
 	newDeclaration := models.Declaration{ID: 0, Title: "declaration", TotalPrice: 10, VATPrice: 2.10, Date: "2017-07-09T12:32:00", Description: "description", ReceiptID: 0, UserID: user.ID, ProjectID: 0}
 	CreateDeclaration(&newDeclaration, db)
 
-	var declaration []models.Declaration
+	var declarations []models.Declaration
 
-	GetDeclarationsForUser(user.ID, &declaration, db)
+	GetDeclarationsForUser(user.ID, &declarations, db)
 
-	if len(declaration) == 0 {
+	if len(declarations) == 0 {
 		t.Error("at least one declartion should be received")
 	}
 }

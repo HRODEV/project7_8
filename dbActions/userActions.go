@@ -12,11 +12,12 @@ func GetUserByID(id uint, user *models.User, db *gorm.DB) {
 }
 
 func CreateUser(user *models.User, db *gorm.DB) error {
-	if user.IsValid() {
+	valid, err := user.IsValid()
+
+	if valid {
 		db.Create(user)
 		return nil
 	} else {
-		return errors.New("No valid password or email given. Pasword must be at least 8 characters")
+		return err
 	}
-
 }
