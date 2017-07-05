@@ -1,7 +1,6 @@
 package dbActions
 
 import (
-	"errors"
 	"github.com/HRODEV/project7_8/models"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
