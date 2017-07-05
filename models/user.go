@@ -14,8 +14,12 @@ type User struct {
 }
 
 func (u *User) IsValid() (bool, error) {
+	if u == nil {
+		return false, errors.New("Something went really wrong...")
+	}
+
 	if len(u.Email) < 5 {
-		return false, errors.New("Email adres is not valid")
+		return false, errors.New("Email address is not valid")
 	}
 
 	if len(u.Password) < 8 {
