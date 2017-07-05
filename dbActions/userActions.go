@@ -1,7 +1,6 @@
 package dbActions
 
 import (
-	"errors"
 	"github.com/HRODEV/project7_8/models"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -12,11 +11,12 @@ func GetUserByID(id uint, user *models.User, db *gorm.DB) {
 }
 
 func CreateUser(user *models.User, db *gorm.DB) error {
-	if user.IsValid() {
+	valid, err := user.IsValid()
+
+	if valid {
 		db.Create(user)
 		return nil
 	} else {
-		return errors.New("User Struct not valid")
+		return err
 	}
-
 }

@@ -1,0 +1,32 @@
+{
+	"variables": [],
+	"info": {
+		"name": "web",
+		"_postman_id": "f09dfc7d-3ad3-db01-da02-389f92555d03",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "127.0.0.1:8080",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "127.0.0.1:8080",
+				"method": "GET",
+				"header": [],
+				"body": {},
+				"description": "hello world"
+			},
+			"response": []
+		}
+	]
+}

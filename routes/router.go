@@ -4,15 +4,22 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"fmt"
+	"github.com/HRODEV/project7_8/dbActions"
+	"github.com/HRODEV/project7_8/models"
+	"github.com/HRODEV/project7_8/services"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
+	"strings"
 )
 
 //type action func(http.ResponseWriter, *http.Request, *gorm.DB)
 type action func(http.ResponseWriter, *http.Request, Utils) interface{}
 
 type Utils struct {
-	db *gorm.DB
+	db          *gorm.DB
+	currentUser *models.User
 }
 
 func (action action) ToHandlerFunc(db *gorm.DB) http.HandlerFunc {
@@ -41,6 +48,44 @@ func decorateJsonHeader(handler http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 		handler(w, r)
+	}
+}
+
+func requireAuthentication(handler action) action {
+	return func(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
+		authorizationHeader := strings.SplitN(r.Header.Get("Authorization"), " ", 2)
+
+		if len(authorizationHeader) != 2 || authorizationHeader[0] != "Bearer" {
+			http.Error(w, "Authorization header not found or empty", http.StatusBadRequest)
+			return nil
+		}
+
+		authService := services.AuthService{}
+		tokenString := authService.DecodeAuthorzationHeader(authorizationHeader[1])
+
+		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
+			// Don't forget to validate the alg is what you expect:
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			}
+
+			return []byte("gXV6aSf4NJ7Ah@S!DrE5$Pm!"), nil
+		})
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return nil
+		}
+
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			utils.currentUser = &models.User{}
+			dbActions.GetUserByID(uint(claims["sub"].(float64)), utils.currentUser, utils.db)
+
+			return handler(w, r, utils)
+		} else {
+			http.Error(w, err.Error(), http.StatusUnauthorized)
+			return nil
+		}
 	}
 }
 
@@ -83,42 +128,49 @@ var routes = Routes{
 		"DeclarationsGet",
 		"GET",
 		"/declarations",
-		DeclarationsGet,
-	},
-
-	Route{
-		"DeclarationsIdDelete",
-		"DELETE",
-		"/declarations/{id}",
-		DeclarationsIdDelete,
+		requireAuthentication(DeclarationsGet),
 	},
 
 	Route{
 		"DeclarationsIdGet",
 		"GET",
 		"/declarations/{id}",
-		DeclarationsIdGet,
+		requireAuthentication(DeclarationsIdGet),
+	},
+
+	Route{
+		"DeclarationsIdGetImage",
+		"GET",
+		"/declarations/{id}/image",
+		requireAuthentication(DeclarationsIdGetImage),
+	},
+
+	Route{
+		"DeclarationsIdDelete",
+		"DELETE",
+		"/declarations/{id}",
+		requireAuthentication(DeclarationsIdDelete),
 	},
 
 	Route{
 		"DeclarationsIdPatch",
 		"PATCH",
 		"/declarations/{id}",
-		DeclarationsIdPatch,
+		requireAuthentication(DeclarationsIdPatch),
 	},
 
 	Route{
 		"DeclarationsPost",
 		"POST",
 		"/declarations",
-		DeclarationsPost,
+		requireAuthentication(DeclarationsPost),
 	},
 
 	Route{
 		"ReceiptIdGet",
 		"GET",
 		"/receipt/{id}",
-		ReceiptIdGet,
+		requireAuthentication(ReceiptIdGet),
 	},
 
 	Route{
@@ -132,14 +184,14 @@ var routes = Routes{
 		"ReceiptPost",
 		"POST",
 		"/receipt",
-		ReceiptPost,
+		requireAuthentication(ReceiptPost),
 	},
 
 	Route{
 		"UserGet",
 		"GET",
 		"/user",
-		UserGet,
+		requireAuthentication(UserGet),
 	},
 
 	Route{
@@ -160,6 +212,6 @@ var routes = Routes{
 		"UserProjectsGet",
 		"GET",
 		"/user/projects",
-		UserProjectsGet,
+		requireAuthentication(UserProjectsGet),
 	},
 }

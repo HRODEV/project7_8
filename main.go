@@ -4,11 +4,38 @@ import (
 	"log"
 	"net/http"
 	"os"
-	
+
+	"github.com/HRODEV/project7_8/dbActions"
 	"github.com/HRODEV/project7_8/models"
 	sw "github.com/HRODEV/project7_8/routes"
 	"github.com/jinzhu/gorm"
 )
+
+func insertTestData(db *gorm.DB) {
+	users := []models.User{
+		{FirstName: "Barld", LastName: "Boot", Email: "boot@barld.nl", Password: "secrect123"},
+		{FirstName: "Niels", LastName: "Van der Veer", Email: "niels@niels.nl", Password: "secrect123"},
+		{FirstName: "Thom", LastName: "Overhand", Email: "thom@dodge.beer", Password: "secrect123"},
+	}
+	for _, user := range users {
+		dbActions.CreateUser(&user, db)
+	}
+
+	receipts := []models.Receipt{
+		{ImagePath: "./declaration_upload/123456789.jpg"},
+	}
+	for _, receipt := range receipts {
+		dbActions.CreateReceipt(&receipt, db)
+	}
+
+	declarations := []models.Declaration{
+		{Title: "first declaration", TotalPrice: 95.32, VATPrice: (95.32 / 121 * 21), Date: "07-08-2016", UserID: uint(1), ReceiptID: 1},
+	}
+	for _, declaration := range declarations {
+		dbActions.CreateDeclaration(&declaration, db)
+	}
+
+}
 
 func main() {
 	args := os.Args
@@ -26,8 +53,11 @@ func main() {
 
 	db.AutoMigrate(&models.User{}, &models.Declaration{}, &models.Receipt{}, &models.Project{}, &models.DeclarationStatus{})
 
-	//db.Model(&models.Declaration{}).
-	//	AddForeignKey("user_id", "users(id)", "RESTRICT", "RESTRICT")
+	if len(args) > 2 {
+		if args[2] == "--testdata" {
+			insertTestData(db)
+		}
+	}
 
 	if err != nil {
 		log.Fatal(err)
