@@ -158,6 +158,34 @@
 				"description": "get user info"
 			},
 			"response": []
+		},
+		{
+			"name": "127.0.0.1:8080/declarations",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "127.0.0.1:8080/declarations",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmxlSEFpT2pFNE1UUTJNRGN6TVRrc0luTjFZaUk2TVgwLmdwMEtFN3E0UWk1YTBGS0tqYzFUMEhLWTA1Nmw1TFBtV2s5WWRyMVJqRjA=",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": ""
+			},
+			"response": []
 		}
 	]
 }
