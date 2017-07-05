@@ -59,6 +59,105 @@
 				"description": ""
 			},
 			"response": []
+		},
+		{
+			"name": "POST: 127.0.0.1:8080/user new user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"",
+							"",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"tests[\"Your test name\"] = jsonData.ID > 0;"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "127.0.0.1:8080/user",
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"description": ""
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"Email\": \"johndoe@example.com\",\r\n  \"FirstName\": \"John\",\r\n  \"LastName\": \"Doe\",\r\n  \"Password\": \"$2y$10$.vGA1O9wmRjrwAVXD98HNOgsNpDczlqm3Jq7KnEd1rVAGv3Fykk1a\"\r\n}"
+				},
+				"description": "Create a new user"
+			},
+			"response": []
+		},
+		{
+			"name": "GET: 127.0.0.1:8080/user",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							"",
+							"",
+							"",
+							"var jsonData = JSON.parse(responseBody);",
+							"tests[\"test if it is the right id\"] = jsonData.ID === 1;",
+							"tests[\"test is email is available\"] = jsonData.Email === \"boot@barld.nl\";"
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "127.0.0.1:8080/user",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer ZXlKaGJHY2lPaUpJVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmxlSEFpT2pFNE1UUTJNRGN6TVRrc0luTjFZaUk2TVgwLmdwMEtFN3E0UWk1YTBGS0tqYzFUMEhLWTA1Nmw1TFBtV2s5WWRyMVJqRjA=",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": "get user info"
+			},
+			"response": []
+		},
+		{
+			"name": "GET: 127.0.0.1:8080/user/auth",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"type": "text/javascript",
+						"exec": [
+							"tests[\"Status code is 200\"] = responseCode.code === 200;",
+							""
+						]
+					}
+				}
+			],
+			"request": {
+				"url": "127.0.0.1:8080/user/auth",
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Basic Ym9vdEBiYXJsZC5ubDpzZWNyZWN0MTIz",
+						"description": ""
+					}
+				],
+				"body": {},
+				"description": "get user info"
+			},
+			"response": []
 		}
 	]
 }
