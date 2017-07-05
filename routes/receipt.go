@@ -158,7 +158,7 @@ func ReceiptPost(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 
 	var date = ""
 	if len(dateResult) > 0 {
-		r := strings.NewReplacer(".", "/", ",", "/")
+		r := strings.NewReplacer(".", "/", ",", "/","-","/")
 		date = r.Replace(dateResult[0])
 	}
 

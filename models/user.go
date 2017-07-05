@@ -3,8 +3,8 @@ package models
 import "errors"
 
 type User struct {
-	ID                  uint `gorm:"primary_key;AUTO_INCREMENT"`
-	Email               string
+	ID                  uint   `gorm:"primary_key;AUTO_INCREMENT"`
+	Email               string `gorm:"unique_index"`
 	FirstName           string
 	LastName            string
 	Password            string
