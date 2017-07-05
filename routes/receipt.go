@@ -63,7 +63,10 @@ func ReceiptIdImageGet(w http.ResponseWriter, r *http.Request, utils Utils) inte
 	}
 	defer img.Close()
 
-	w.Header().Set("Content-Type", "image/jpeg") // <-- set the content-type header
+	w.Header().Set("Content-Type", "image/jpeg")
+	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+	w.Header().Set("Expires", "0")
+	w.Header().Set("Pragma", "no-cache")
 	io.Copy(w, img)
 
 	return nil
