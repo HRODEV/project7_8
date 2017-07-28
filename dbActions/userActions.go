@@ -7,6 +7,10 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
+func GetUsers(users *[]models.User, db *gorm.DB) {
+	db.Find(users)
+}
+
 func GetUserByID(id uint, user *models.User, db *gorm.DB) {
 	db.First(user, id)
 }

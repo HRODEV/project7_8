@@ -25,6 +25,7 @@ type Utils struct {
 func (action action) ToHandlerFunc(db *gorm.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		responseBody := action(w, r, Utils{db: db})
+		w.Header().Set("Access-Control-Allow-Origin", "*")
 
 		if responseBody != nil {
 			enc := json.NewEncoder(w)
@@ -108,7 +109,6 @@ func NewRouter(db *gorm.DB) *mux.Router {
 			Name(route.Name).
 			Handler(handler)
 	}
-
 	return router
 }
 
@@ -185,6 +185,13 @@ var routes = Routes{
 		"POST",
 		"/receipt",
 		requireAuthentication(ReceiptPost),
+	},
+
+	Route{
+		"UsersGet",
+		"GET",
+		"/users",
+		UsersGet,
 	},
 
 	Route{

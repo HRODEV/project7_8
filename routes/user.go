@@ -54,6 +54,13 @@ func UserAuthGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{
 	return &models.Auth{UserId: user.ID, Token: tokenString}
 }
 
+func UsersGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
+	var users []models.User
+	dbActions.GetUsers(&users, utils.db)
+
+	return &users
+}
+
 func UserGet(w http.ResponseWriter, r *http.Request, utils Utils) interface{} {
 	var user models.User
 	dbActions.GetUserByID(utils.currentUser.ID, &user, utils.db)
