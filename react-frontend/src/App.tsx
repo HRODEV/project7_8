@@ -1,6 +1,7 @@
 import * as React from 'react';
 import './App.css';
-import { User } from "./API_models";
+import { User } from './API_models';
+import UserService from './UserAPI.service'
 
 const logo = require('./logo.svg');
 
@@ -12,7 +13,9 @@ class App extends React.Component<{}, AppState> {
   }
 
   componentWillMount(): void {
-    fetch('http://localhost:8080/users').then(r => r.json()).then(j => this.setState({...this.state, users: j as User[] }));
+    UserService.GetAllUsers()
+        .then(j => this.setState({...this.state, users: j as User[] }))
+        .catch(e => console.error("there is an network error"));
   }
   
   render() {
